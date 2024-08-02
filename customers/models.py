@@ -40,4 +40,4 @@ class Customers(models.Model):
         db_table = 'customers'
 
     def __str__(self):
-        return f"{self.customer_name}#{self.customer_code}"
+        return f"{self.customer_name} #{self.customer_code}"
