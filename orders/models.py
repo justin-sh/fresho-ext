@@ -33,3 +33,6 @@ class Orders(models.Model):
     class Meta:
         managed = False
         db_table = 'orders'
+
+    def __str__(self):
+        return f"{self.receiving_company_name}#{self.order_number}"
