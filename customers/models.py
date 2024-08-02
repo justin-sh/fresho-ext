@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Customers(models.Model):
+class Customer(models.Model):
     id = models.CharField(primary_key=True, unique=True, max_length=36)
     customer_name = models.CharField(max_length=128, db_comment='do not edit')
     legal_entity_name = models.CharField(max_length=128, db_comment='do not edit')

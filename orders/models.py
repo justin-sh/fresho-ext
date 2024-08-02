@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Orders(models.Model):
+class Order(models.Model):
     id = models.CharField(primary_key=True, unique=True, max_length=36)
     order_number = models.CharField(unique=True, max_length=255)
     delivery_date = models.DateField()
