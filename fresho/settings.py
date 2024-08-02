@@ -75,8 +75,12 @@ WSGI_APPLICATION = 'fresho.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'houseof4_db52ayaf4m8s5w',
+        'USER': 'houseof4_ur5xnqpsvdfhr',
+        'PASSWORD': 'sYGAkL8gaAPhx3V',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
 }
 
