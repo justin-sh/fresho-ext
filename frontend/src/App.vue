@@ -8,11 +8,11 @@
 
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item>
-              <RouterLink to="/">Home</RouterLink>
+            <b-nav-item :to="{name:'home'}">
+              Home
             </b-nav-item>
-            <b-nav-item>
-              <RouterLink to="/about">Orders</RouterLink>
+            <b-nav-item :to="{name:'about'}">
+              Orders
             </b-nav-item>
           </b-navbar-nav>
 
