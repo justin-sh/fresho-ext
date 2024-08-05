@@ -1,26 +1,28 @@
-import './assets/main.css'
+// import './assets/main.css'
 
-import { createApp } from 'vue'
+import Vue, { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
-// Vuetify
-import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
+import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 
+// Import Bootstrap and BootstrapVue CSS files (order is important)
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+
+// @ts-ignore
 import App from './App.vue'
 import router from './router'
 
-const vuetify = createVuetify({
-  components,
-  directives,
-})
+Vue.use(BootstrapVue);
+Vue.use(IconsPlugin);
 
 const app = createApp(App)
 
 app.use(createPinia())
-app.use(vuetify)
 app.use(router)
+// @ts-ignore
+// app.use(BootstrapVue)
+// @ts-ignore
+// app.use(IconsPlugin)
 
 app.mount('#app')

@@ -8,11 +8,20 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
     base: '/static',
     plugins: [
-        vue(),
+        vue({
+            template: {
+                compilerOptions: {
+                    compatConfig: {
+                        MODE: 3
+                    }
+                }
+            }
+        }),
         vueDevTools(),
     ],
     resolve: {
         alias: {
+            vue: '@vue/compat',
             '@': fileURLToPath(new URL('./src', import.meta.url))
         }
     },
