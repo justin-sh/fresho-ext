@@ -1,4 +1,8 @@
 env/
 .idea/
 
+logs/
+
 **/__pycache__/
+
+run.bat
