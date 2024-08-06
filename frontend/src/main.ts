@@ -1,6 +1,9 @@
 // import './assets/main.css'
 
-import Vue, { createApp } from 'vue'
+import Vue, {
+    createApp,
+    // configureCompat
+} from 'vue'
 import { createPinia } from 'pinia'
 
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
