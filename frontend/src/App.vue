@@ -11,7 +11,7 @@
             <b-nav-item :to="{name:'home'}">
               Home
             </b-nav-item>
-            <b-nav-item :to="{name:'about'}">
+            <b-nav-item :to="{name:'orders'}">
               Orders
             </b-nav-item>
           </b-navbar-nav>
@@ -37,17 +37,22 @@
     </div>
     <!--    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125"/>-->
 
-    <div class="wrapper">
+<!--     <div class="wrapper">
       <HelloWorld msg="You did it!"/>
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
       </nav>
-    </div>
+    </div> -->
   </header>
 
+  <div  class="container">
   <RouterView/>
+</div>
+<footer>
+  
+</footer>
 </template>
 
 <script setup lang="ts">
