@@ -40,6 +40,7 @@ ALLOWED_HOSTS = ['desktop-uqef36h','localhost']
 INSTALLED_APPS = [
     'customers.apps.CustomersConfig',
     'orders.apps.OrdersConfig',
+    'api.apps.ApiConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
