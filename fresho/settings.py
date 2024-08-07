@@ -33,7 +33,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['desktop-uqef36h','localhost']
+ALLOWED_HOSTS = ['desktop-uqef36h', 'localhost']
 
 # Application definition
 
@@ -159,8 +159,12 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django.db.backends': {
+        'root': {
             'handlers': ['file'],
+            'level': 'DEBUG',
+        },
+        'django.db.backends': {
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
         },
     },
