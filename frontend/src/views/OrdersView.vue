@@ -10,12 +10,13 @@
     <b-form inline>
       <div class="flex justify-content-center">
         <label for="datepicker" class="justify-content-start">Delivery date</label>
-        <b-form-datepicker
+        <b-form-input
+            type="date"
             id="datepicker"
             v-model="deliveryDate"
             :date-format-options="{ year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' }">
 
-        </b-form-datepicker>
+        </b-form-input>
       </div>
       <div class="ml-3 align-content-center">
         <label for="customer" class="justify-content-start">Customer</label>
@@ -31,15 +32,14 @@
   <b-card title="Orders">
     <b-card v-if="orders.length===0">
       <b-card-text>
-        No orders. Would you please upload orders? or <b-button variant="outline-primary">INIT Order</b-button>
+        No orders. Would you please upload orders? or
+        <b-button variant="outline-primary">INIT Order</b-button>
       </b-card-text>
       <b-form-file
           accept="text/csv"
-          @input="readOrderFile"
+          @update:model-value="readOrderFile"
           placeholder="Choose a order CSV file or drop it here..."
           drop-placeholder="Drop file here..."></b-form-file>
-
-<!--      <div class="mt-3">Selected file: {{ orderFile ? orderFile.name : '' }}</div>-->
     </b-card>
   </b-card>
 </template>

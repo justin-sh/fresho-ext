@@ -1,31 +1,24 @@
 // import './assets/main.css'
 
-import Vue, {
+import {
     createApp,
-    // configureCompat
 } from 'vue'
-import { createPinia } from 'pinia'
+import {createPinia} from 'pinia'
+import {createBootstrap} from 'bootstrap-vue-next'
 
-import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
-
-// Import Bootstrap and BootstrapVue CSS files (order is important)
+// Add the necessary CSS
 import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+import 'bootstrap-vue-next/dist/bootstrap-vue-next.css'
 
 // @ts-ignore
 import App from './App.vue'
 import router from './router'
 
-Vue.use(BootstrapVue);
-Vue.use(IconsPlugin);
 
 const app = createApp(App)
 
+app.use(createBootstrap())
 app.use(createPinia())
 app.use(router)
-// @ts-ignore
-// app.use(BootstrapVue)
-// @ts-ignore
-// app.use(IconsPlugin)
 
 app.mount('#app')
