@@ -33,7 +33,7 @@
     <b-card v-if="orders.length===0">
       <b-card-text>
         No orders. Would you please upload orders? or
-        <b-button variant="outline-primary">INIT Order</b-button>
+        <b-button variant="outline-primary" :loading="init_loading" @click.stop="initOrder2Server">INIT Order</b-button>
       </b-card-text>
       <b-form-file
           accept="text/csv"
@@ -47,7 +47,7 @@
 <script lang="ts" setup>
 import {ref, watchEffect} from "vue";
 import {CanceledError} from "axios";
-import {uploadOrdersCsv} from '@/api'
+import {uploadOrdersCsv, initOrders} from '@/api'
 
 import {formatInTimeZone} from "date-fns-tz";
 
@@ -59,6 +59,8 @@ const customer = ref('')
 const product = ref('')
 
 const orders = ref([])
+
+const init_loading = ref(false)
 
 let abortController: AbortController | null = null;
 watchEffect(async () => {
@@ -84,6 +86,12 @@ watchEffect(async () => {
     abortController = null
   }
 })
+
+const initOrder2Server = async () => {
+  init_loading.value = true
+  await initOrders(deliveryDate.value)
+  init_loading.value = false
+}
 
 const readOrderFile = async (file: File | null) => {
   if (file === null) {
