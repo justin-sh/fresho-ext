@@ -31,7 +31,7 @@
   <b-card title="Orders">
     <b-card v-if="orders.length===0">
       <b-card-text>
-        No orders. Would you please upload orders?
+        No orders. Would you please upload orders? or <b-button variant="outline-primary">Primary</b-button>
       </b-card-text>
       <b-form-file
           accept="text/csv"
@@ -47,6 +47,7 @@
 <script lang="ts" setup>
 import {ref, watchEffect} from "vue";
 import {CanceledError} from "axios";
+import {uploadOrderCsv} from '@/api'
 
 import {formatInTimeZone} from "date-fns-tz";
 
@@ -92,5 +93,7 @@ const readOrderFile = async (file: File | null) => {
 
   console.log(file.name)
   console.log(file.size)
+
+  await uploadOrderCsv(file)
 }
 </script>

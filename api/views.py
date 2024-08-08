@@ -24,6 +24,11 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
+@api_view(['GET'])
+@permission_classes((permissions.AllowAny,))
+def init_orders(requests: Request):
+    return Response('ok')
+
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.AllowAny,))
 def upload_orders(requests: Request):
@@ -35,7 +40,7 @@ def upload_orders(requests: Request):
     if files and len(files) != 1:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     logger.info("---------" + ",".join(files.dict()))
-    order_file: UploadedFile = files.get("yes")
+    order_file: UploadedFile = files.get("orderFile")
     logger.info(order_file.name)
     logger.info(order_file.size)
     logger.info(order_file.charset)
