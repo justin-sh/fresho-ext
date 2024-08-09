@@ -1,10 +1,12 @@
 from django.contrib import admin
+
 from .models import Order
 
 
 class CustomerNameFilter(admin.SimpleListFilter):
     title = 'Customer name'
     parameter_name = 'customer_name'
+
     # template = 'admin_input_filter.html'
 
     def lookups(self, request, model_admin):
@@ -19,6 +21,7 @@ class CustomerNameFilter(admin.SimpleListFilter):
 class ProductsFilter(admin.SimpleListFilter):
     title = "Product"
     parameter_name = "prd_name"
+
     # template = "admin_input_filter.html"
 
     def lookups(self, request, model_admin):

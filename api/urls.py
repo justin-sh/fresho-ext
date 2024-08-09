@@ -1,11 +1,15 @@
 from django.urls import path, include
+from rest_framework import routers
 
 from api import views
 
+router = routers.DefaultRouter()
+router.register('users', views.UserViewSet, basename='users')
+router.register('orders', views.OrderViewSet, basename="orders")
+
 urlpatterns = [
     path('auth/', include('rest_framework.urls')),
-    # path('api/users/', views.UserViewSet),
     path('orders/init/', views.init_orders),
     path('orders/upload/', views.upload_orders),
-    # path('snippets/', views.snippet_detail),
+    path('', include(router.urls)),
 ]

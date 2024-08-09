@@ -9,9 +9,10 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-import environ
 import os
 from pathlib import Path
+
+import environ
 
 env = environ.Env(
     # set casting, default value
@@ -172,7 +173,7 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'django.db.backends': {
-            'handlers': ['console', 'file'],
+            'handlers': ['file'],
             'level': 'DEBUG',
         },
     },

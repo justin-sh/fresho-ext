@@ -54,7 +54,7 @@ import {formatInTimeZone} from "date-fns-tz";
 const localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 const deliveryDate = ref(formatInTimeZone(new Date(), localTZ, "yyyy-MM-dd"))
-console.log(deliveryDate.value)
+// console.log(deliveryDate.value)
 const customer = ref('')
 const product = ref('')
 
