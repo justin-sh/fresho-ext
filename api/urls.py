@@ -9,7 +9,5 @@ router.register('orders', views.OrderViewSet, basename="orders")
 
 urlpatterns = [
     path('auth/', include('rest_framework.urls')),
-    path('orders/init/', views.init_orders),
-    path('orders/upload/', views.upload_orders),
     path('', include(router.urls)),
 ]

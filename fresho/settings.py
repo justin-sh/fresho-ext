@@ -157,6 +157,16 @@ CORS_ALLOW_CREDENTIALS = True
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{asctime} {levelname} {message}",
+            "style": "{",
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
@@ -171,10 +181,13 @@ LOGGING = {
         'root': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'formatter': 'verbose',
         },
         'django.db.backends': {
             'handlers': ['file'],
             'level': 'DEBUG',
+            "propagate": False,
+            'formatter': 'verbose',
         },
     },
 }
