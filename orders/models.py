@@ -8,7 +8,7 @@ class Order(models.Model):
     receiving_company_id = models.CharField(max_length=36)
     receiving_company_name = models.CharField(max_length=255)
     additional_notes = models.CharField(max_length=4000, blank=True, null=True)
-    contact_name = models.CharField(max_length=255, blank=True, null=True)
+    contact_name = models.CharField(max_length=255, blank=False, null=False)
     contact_phone = models.CharField(max_length=255, blank=True, null=True)
     delivery_address = models.CharField(max_length=255)
     delivery_method = models.CharField(max_length=255)
@@ -31,7 +31,7 @@ class Order(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True, db_comment='UTC')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'orders'
 
     def __str__(self):
