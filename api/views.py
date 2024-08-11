@@ -31,13 +31,16 @@ class OrderViewSet(viewsets.ModelViewSet):
         orders = Order.objects
         del_date = self.request.query_params.get('delivery_date')
         customer = self.request.query_params.get('customer')
+        product = self.request.query_params.get('product')
         if del_date:
             orders = orders.filter(delivery_date=del_date)
         if customer:
             orders = orders.filter(receiving_company_name__icontains=customer)
-        if not del_date and not customer:
+        if product:
+            orders = orders.filter(products__icontains=product)
+        if not del_date and not customer and not product:
             return orders.none()
-        return orders.order_by('receiving_company_name', '-delivery_date')
+        return orders.order_by('receiving_company_name', '-delivery_date')[:200]
 
     @action(detail=False)
     def init(self, request):

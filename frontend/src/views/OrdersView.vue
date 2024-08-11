@@ -41,13 +41,23 @@
           placeholder="Choose a order CSV file or drop it here..."
           drop-placeholder="Drop file here..."></b-form-file>
     </b-card>
+    <!--    https://bootstrap-vue.org/docs/components/table#complete-example -->
+    <b-table v-if="orders.length>0"
+             striped hover
+             @row-clicked="gotoFresho"
+             :items="orders"
+             :fields="fields">
+      <template #cell(order_number)="row">
+        <a :href="'https://app.fresho.com/supplier/orders/'+row.item.id" target="_blank"> {{ row.value }}</a>
+      </template>
+    </b-table>
   </b-card>
 </template>
 
 <script lang="ts" setup>
 import {ref, watchEffect} from "vue";
 import {CanceledError} from "axios";
-import {uploadOrdersCsv, initOrders} from '@/api'
+import {getOrdersWithFilters, initOrders, uploadOrdersCsv} from '@/api'
 
 import {formatInTimeZone} from "date-fns-tz";
 
@@ -60,6 +70,12 @@ const product = ref('')
 
 const orders = ref([])
 
+const fields = [
+  {key: 'order_number', label: 'Order#'},
+  {key: 'receiving_company_name', label: 'Customer'},
+  {key: 'delivery_date'},
+]
+
 const init_loading = ref(false)
 
 let abortController: AbortController | null = null;
@@ -71,12 +87,16 @@ watchEffect(async () => {
 
   try {
     abortController = new AbortController()
-    const url = `/v1/orders?date=${deliveryDate.value}&pn=${product.value}&cn=${customer.value}`
-    console.log(url)
-    // const data = (await http.get(url, {signal: abortController.signal})).data
 
-    // orders.value = data.sort((o1, o2) => (o2.deliveryDate + (o2.deliveryAt || '')).localeCompare(o1.deliveryDate + (o1.deliveryAt || '')))
-    // orders.value = orders.value.
+    const data = (await getOrdersWithFilters({
+          delivery_date: deliveryDate.value,
+          customer: customer.value,
+          product: product.value,
+        },
+        {signal: abortController.signal}
+    )).data
+
+    orders.value = data
 
   } catch (e) {
     if (!(e instanceof CanceledError)) {
@@ -104,4 +124,17 @@ const readOrderFile = async (file: File | null) => {
 
   await uploadOrdersCsv(file)
 }
+
+const gotoFresho = function (item) {
+  // console.log(item['id'])
+  // console.log(item.id)
+
+  const url = 'https://app.fresho.com/supplier/orders/' + item.id// + '?company_id=9d10a274-72c3-43a6-92b3-87cde4703ea4&mode=sell'
+  window.open(url, '_blank')
+}
 </script>
+<style scoped>
+tr {
+  cursor: pointer;
+}
+</style>
