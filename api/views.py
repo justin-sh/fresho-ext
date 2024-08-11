@@ -1,8 +1,10 @@
 import csv
+import datetime
 import logging
 import os
 from io import TextIOWrapper
 
+import requests
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDict
 from rest_framework import permissions, viewsets, status
@@ -49,7 +51,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         }
         url = 'https://app.fresho.com/api/v1/my/suppliers/supplier_orders'
 
-        logger.info(request.GET['delivery_date'])
+        # logger.info(request.GET['delivery_date'])
         params = {'page': 1,
                   'per_page': 200,
                   'q[order_state]': 'all',
@@ -58,64 +60,22 @@ class OrderViewSet(viewsets.ModelViewSet):
                   'q[delivery_date]': request.GET['delivery_date'],
                   'sort': '-delivery_date,-submitted_at,-order_number',
                   }
-        # rv = requests.get(url, params=params, cookies=cookies)
-        # data = rv.json()
-        data = {'supplier_orders': [
-            {'additional_notes': None, 'contact_name': 'Gilbert Street Hotel', 'contact_phone': '8231 9909',
-             'delivery_address': '88 Gilbert Street, Adelaide SA 5000', 'delivery_date': '2024-08-08',
-             'delivery_method': 'Delivery', 'delivery_venue': 'Gilbert Street Hotel', 'discount_percent': '0.0',
-             'external_reference': None, 'id': 'ad0c287b-671a-43c7-9563-643764d777a0', 'number_of_boxes': None,
-             'order_number': '30935007', 'parent_order_id': None, 'standing_order_enabled': False,
-             'start_as_invoice': False, 'state': 'invoiced', 'submitted_at': '2024-08-08T05:00:31.080+01:00',
-             'invoice_confirmed': False, 'selling_company_id': 'b181ee08-2214-46ec-ad1e-926a2bbfb8fb',
-             'delivery_instructions': 'PLEASE DELIVER BEFORE 11AM', 'cached_payable_total_in_cents': 14264,
-             'prefixed_order_number': 'F30935007', 'cancellable': True, 'chargeable': True, 'charge_credit_card': False,
-             'latest_charge_state': None, 'is_locked': True, 'finalised': True, 'has_zero_price_product_orders': False,
-             'is_credit_note': False, 'supplier_may_finalise': False, 'formatted_cached_payable_total': '$142.64',
-             'may_mark_as_paid': True, 'receiving_company_id': '83d7ec7e-a03d-45f2-ac7b-569905a42f7c',
-             'status_icons': '',
-             'has_credit_card_fee': False, 'receiving_company_name': 'Gilbert Street Hotel',
-             'placed_by_name': 'qian zhang'},
-            {'additional_notes': None, 'contact_name': 'Mugen House City, Zhenghan Jiang',
-             'contact_phone': '0416761214, 61429 993 018',
-             'delivery_address': '408 King William St, Adelaide SA 5000',
-             'delivery_date': '2024-08-08', 'delivery_method': 'Delivery',
-             'delivery_venue': 'Mugen House City', 'discount_percent': '0.0',
-             'external_reference': None, 'id': '0298e64b-a65c-4552-aa04-6617366043d5',
-             'number_of_boxes': None, 'order_number': '30928168', 'parent_order_id': None,
-             'standing_order_enabled': False, 'start_as_invoice': False,
-             'state': 'cancelled', 'submitted_at': '2024-08-08T03:51:36.329+01:00',
-             'invoice_confirmed': False,
-             'selling_company_id': 'b181ee08-2214-46ec-ad1e-926a2bbfb8fb',
-             'delivery_instructions': '', 'cached_payable_total_in_cents': 28527,
-             'prefixed_order_number': 'F30928168', 'cancellable': True,
-             'chargeable': False, 'charge_credit_card': False,
-             'latest_charge_state': None, 'is_locked': True, 'finalised': False,
-             'has_zero_price_product_orders': False, 'is_credit_note': False,
-             'supplier_may_finalise': False, 'formatted_cached_payable_total': '$285.27',
-             'may_mark_as_paid': False,
-             'receiving_company_id': '7a8d5ef4-f416-418d-a5f3-600b66703fe1',
-             'status_icons': '', 'has_credit_card_fee': False,
-             'receiving_company_name': 'Mugen House City',
-             'placed_by_name': 'qian zhang'},
-            {'additional_notes': None, 'contact_name': 'Yvonne', 'contact_phone': '0473657917',
-             'delivery_address': '36, Wright Street, Adelaide.', 'delivery_date': '2024-08-08',
-             'delivery_method': 'Delivery', 'delivery_venue': 'Ding Hao', 'discount_percent': '0.0',
-             'external_reference': None, 'id': '0692e127-d778-4956-9cb3-d4f6b4202cd2', 'number_of_boxes': 1,
-             'order_number': '30700764', 'parent_order_id': None, 'standing_order_enabled': False,
-             'start_as_invoice': False, 'state': 'invoiced', 'submitted_at': '2024-07-31T20:36:54.669+01:00',
-             'invoice_confirmed': False, 'selling_company_id': 'b181ee08-2214-46ec-ad1e-926a2bbfb8fb',
-             'delivery_instructions': '', 'cached_payable_total_in_cents': 24240, 'prefixed_order_number': 'F30700764',
-             'cancellable': True, 'chargeable': True, 'charge_credit_card': False, 'latest_charge_state': None,
-             'is_locked': True, 'finalised': True, 'has_zero_price_product_orders': True, 'is_credit_note': False,
-             'supplier_may_finalise': False, 'formatted_cached_payable_total': '$242.40', 'may_mark_as_paid': True,
-             'receiving_company_id': '161f1339-d0a3-4292-9cc8-1290fe21816b', 'status_icons': '💳',
-             'has_credit_card_fee': False, 'receiving_company_name': 'Ding Hao', 'placed_by_name': 'Justin'}],
-            'meta': {'total_objects': 3, 'total_pages': 1,
-                     'supplier_dashboard': {'next_delivery_order_count': 142, 'future_delivery_order_count': 35}}}
-        # logger.info(rv.url)
-        # logger.info(rv.status_code)
+        rv = requests.get(url, params=params, cookies=cookies)
+        data = rv.json()
+        utc_now = datetime.datetime.now(datetime.UTC)
+        for x in data['supplier_orders']:
+            x['payable_total_in_cents'] = x['cached_payable_total_in_cents'] \
+                if x['cached_payable_total_in_cents'] else 0
+            x['locked'] = 0
+            x['created_at'] = utc_now
+            x['updated_at'] = utc_now
 
+        order_serilizer = OrderSerializer(data=data['supplier_orders'], many=True)
+        if order_serilizer.is_valid():
+            o = order_serilizer.save()
+            logger.info(o)
+        else:
+            logger.error(order_serilizer.errors)
         logger.info(len(data['supplier_orders']))
         return Response('ok from viewsets')
 
