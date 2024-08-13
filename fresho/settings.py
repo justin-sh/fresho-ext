@@ -174,17 +174,22 @@ LOGGING = {
         "file": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs/debug.log",
+            "filename": BASE_DIR / "logs/frsho-ext.log",
+        },
+        "sql": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs/sql.log",
         },
     },
     'loggers': {
         'root': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'formatter': 'verbose',
         },
         'django.db.backends': {
-            'handlers': ['file'],
+            'handlers': ['sql'],
             'level': 'DEBUG',
             "propagate": False,
             'formatter': 'verbose',

@@ -72,8 +72,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         order_serilizer = OrderSerializer(data=data['supplier_orders'], many=True)
         if order_serilizer.is_valid():
-            o = order_serilizer.save()
-            logger.info(o)
+            order_serilizer.save()
+            # logger.info(o)
         else:
             logger.error(order_serilizer.errors)
         logger.info(len(data['supplier_orders']))

@@ -2,7 +2,7 @@ import {createRouter, createWebHistory} from 'vue-router'
 // @ts-ignore
 import HomeView from '../views/HomeView.vue'
 // @ts-ignore
-import OrdersUploadView from '../views/OrdersUploadView.vue'
+import FileUploadView from '../views/FileUploadView.vue'
 // @ts-ignore
 import OrdersView from '@/views/OrdersView.vue'
 
@@ -17,12 +17,12 @@ const router = createRouter({
             component: HomeView
         },
         {
-            path: '/orders/upload',
-            name: 'orders-upload',
+            path: '/files/upload',
+            name: 'files-upload',
             // route level code-splitting
             // this generates a separate chunk (About.[hash].js) for this route
             // which is lazy-loaded when the route is visited.
-            component: OrdersUploadView
+            component: FileUploadView
         },
         {
             path: '/orders',
