@@ -63,6 +63,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         rv = requests.get(url, params=params, cookies=cookies)
         data = rv.json()
         utc_now = datetime.datetime.now(datetime.UTC)
+        ret = {'success': {'cnt': 0}, 'failure': {'cnt': 0, 'data': []}, 'duplicate': {'cnt': 0}}
         for x in data['supplier_orders']:
             x['payable_total_in_cents'] = x['cached_payable_total_in_cents'] \
                 if x['cached_payable_total_in_cents'] else 0
@@ -70,19 +71,31 @@ class OrderViewSet(viewsets.ModelViewSet):
             x['created_at'] = utc_now
             x['updated_at'] = utc_now
 
-        order_serilizer = OrderSerializer(data=data['supplier_orders'], many=True)
-        if order_serilizer.is_valid():
-            order_serilizer.save()
-            # logger.info(o)
-        else:
-            logger.info(order_serilizer.data)
-            logger.error(order_serilizer.errors)
-        logger.info(len(data['supplier_orders']))
-        return Response('ok from viewsets')
+            order_ser = OrderSerializer(data=x)
+            if order_ser.is_valid():
+                try:
+                    order_ser.save()
+                    ret['success']['cnt'] += 1
+                except Exception as ex:
+                    ret['failure']['cnt'] += 1
+                    ret['failure']['data'].append({'name': x['receiving_company_name'], 'msg': ex.args})
+                    logger.error("save order failed for %s" % x['receiving_company_name'], ex)
+            else:
+                if ('id' in order_ser.errors or 'unique' == order_ser.errors['id'].code) or \
+                        not ('order_number' in order_ser.errors or 'unique' == order_ser.errors['id'].code):
+                    ret['duplicate']['cnt'] += 1
+                else:
+                    ret['failure']['cnt'] += 1
+                    ret['failure']['data'].append({'name': x['receiving_company_name'], 'msg': order_ser.errors})
+                    logger.error("save order for %s failed" % x['receiving_company_name'], order_ser.errors)
+
+        # logger.info(len(data['supplier_orders']))
+        return Response(ret)
 
     """
     update order detail
     """
+
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def upload(self, request):
         logger.info("---------")
@@ -104,7 +117,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         for x in reader:
             # logger.info(x)
             if x['Order Number'] not in orders:
-                orders[x['Order Number']] = { 'products':[], 'run':x['Delivery Run']}
+                orders[x['Order Number']] = {'products': [], 'run': x['Delivery Run']}
             # if x['Order Number'] in orders else orders[x['Order Number']]
             p = {
                 'code': x['Product Code'].strip("'"),
@@ -120,7 +133,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         logger.info(orders)
 
         return Response("ok from viewsets")
-
 
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny], url_path='detail-upload/')
     def uploadDetail(self, request):

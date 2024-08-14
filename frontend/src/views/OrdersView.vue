@@ -29,18 +29,27 @@
     </b-form>
   </b-card>
 
-  <b-card title="Orders">
-    <b-card v-if="orders.length===0">
-      <b-card-text>
-        No orders. Would you please upload orders? or
-        <b-button variant="outline-primary" :loading="init_loading" @click.stop="initOrder2Server">INIT Order</b-button>
-      </b-card-text>
-      <b-form-file
-          accept="text/csv"
-          @update:model-value="readOrderFile"
-          placeholder="Choose a order CSV file or drop it here..."
-          drop-placeholder="Drop file here..."></b-form-file>
-    </b-card>
+  <b-card>
+    <b-card-title>
+      Orders
+      <b-button variant="outline-primary"
+                v-if="orders.length>0"
+                :loading="init_loading"
+                @click.stop="initOrder2Server">
+        re-INIT Order
+      </b-button>
+    </b-card-title>
+    <!--    <b-card>-->
+    <div v-if="orders.length===0">
+      No orders. Would you please upload orders? or
+      <b-button variant="outline-primary" :loading="init_loading" @click.stop="initOrder2Server">INIT Order</b-button>
+    </div>
+    <!--      <b-form-file-->
+    <!--          accept="text/csv"-->
+    <!--          @update:model-value="readOrderFile"-->
+    <!--          placeholder="Choose a order CSV file or drop it here..."-->
+    <!--          drop-placeholder="Drop file here..."></b-form-file>-->
+    <!--    </b-card>-->
     <!--    https://bootstrap-vue.org/docs/components/table#complete-example -->
     <b-table v-if="orders.length>0"
              striped hover
