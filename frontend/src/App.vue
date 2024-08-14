@@ -14,7 +14,11 @@
             <b-nav-item :to="{name:'orders'}">
               Orders
             </b-nav-item>
+            <b-nav-item :to="{name:'files-upload'}">
+              Files Upload
+            </b-nav-item>
           </b-navbar-nav>
+
 
           <!-- Right aligned nav items -->
           <b-navbar-nav class="ml-auto">
