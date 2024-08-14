@@ -89,13 +89,13 @@ WSGI_APPLICATION = 'fresho.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'houseof4_db52ayaf4m8s5w',
-        'USER': 'houseof4_ur5xnqpsvdfhr',
-        'PASSWORD': 'sYGAkL8gaAPhx3V',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS':{
-            'charset':'utf8mb4',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
+        'OPTIONS': {
+            'charset': env('DB_CHARSET'),
         }
     }
 }
