@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Order
+from .models import Order, DeliveryRun
 
 
 class CustomerNameFilter(admin.SimpleListFilter):
@@ -43,4 +43,9 @@ class OrdersAdmin(admin.ModelAdmin):
     actions = None
 
 
+class DeliveryRunAdmin(admin.ModelAdmin):
+    list_display = ('id', 'code', 'name')
+
+
 admin.site.register(Order, OrdersAdmin)
+admin.site.register(DeliveryRun, DeliveryRunAdmin)
