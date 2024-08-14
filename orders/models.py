@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 
@@ -36,3 +38,15 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.receiving_company_name} #{self.order_number}"
+
+
+class DeliveryRun(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4)
+    code = models.CharField(unique=True, blank=False, null=False, max_length=32)
+    name = models.CharField(unique=True, blank=False, null=False, max_length=128)
+    created_at = models.DateTimeField(blank=True, null=True, db_comment='UTC')
+    updated_at = models.DateTimeField(blank=True, null=True, db_comment='UTC')
+
+    class Meta:
+        managed = True
+        db_table='runs'

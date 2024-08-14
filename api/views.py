@@ -1,5 +1,6 @@
 import csv
 import datetime
+import json
 import logging
 import os
 from io import TextIOWrapper
@@ -115,24 +116,26 @@ class OrderViewSet(viewsets.ModelViewSet):
         orders = {}
 
         for x in reader:
-            # logger.info(x)
+            if "'STD_FREIGHT_BOX'" == x['Product Code']:
+                continue
             if x['Order Number'] not in orders:
                 orders[x['Order Number']] = {'products': [], 'run': x['Delivery Run']}
-            # if x['Order Number'] in orders else orders[x['Order Number']]
             p = {
                 'code': x['Product Code'].strip("'"),
                 'group': x['Product Group'],
                 'name': x['Product Name'],
-                'qty': x['Quantity'],
+                'qty': float(x['Quantity']),
                 'qtyType': x['Qty Type'],
                 'customerNotes': x['Customer Notes'],
                 'supplierNotes': x['Supplier Notes'],
                 'status': x['Product Status'],
             }
             orders[x['Order Number']]['products'].append(p)
-        logger.info(orders)
 
-        return Response("ok from viewsets")
+        for k, v in orders.items():
+            logger.info(k + '=>' + json.dumps(v))
+
+        return Response(orders)
 
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny], url_path='detail-upload/')
     def uploadDetail(self, request):
