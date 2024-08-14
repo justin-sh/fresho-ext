@@ -75,12 +75,55 @@ class OrderViewSet(viewsets.ModelViewSet):
             order_serilizer.save()
             # logger.info(o)
         else:
+            logger.info(order_serilizer.data)
             logger.error(order_serilizer.errors)
         logger.info(len(data['supplier_orders']))
         return Response('ok from viewsets')
 
+    """
+    update order detail
+    """
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def upload(self, request):
+        logger.info("---------")
+        files: MultiValueDict = request.FILES
+        if files and len(files) != 1:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        order_file = files.get("orderFile")
+
+        # max size : 1M
+        if order_file.size > 1 * 1024 * 1024:
+            return Response("File is too big", status=status.HTTP_400_BAD_REQUEST)
+
+        f = TextIOWrapper(order_file, encoding="utf-8", newline="")
+        reader = csv.DictReader(f)
+        logger.info(reader.fieldnames)
+
+        orders = {}
+
+        for x in reader:
+            # logger.info(x)
+            if x['Order Number'] not in orders:
+                orders[x['Order Number']] = { 'products':[], 'run':x['Delivery Run']}
+            # if x['Order Number'] in orders else orders[x['Order Number']]
+            p = {
+                'code': x['Product Code'].strip("'"),
+                'group': x['Product Group'],
+                'name': x['Product Name'],
+                'qty': x['Quantity'],
+                'qtyType': x['Qty Type'],
+                'customerNotes': x['Customer Notes'],
+                'supplierNotes': x['Supplier Notes'],
+                'status': x['Product Status'],
+            }
+            orders[x['Order Number']]['products'].append(p)
+        logger.info(orders)
+
+        return Response("ok from viewsets")
+
+
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny], url_path='detail-upload/')
+    def uploadDetail(self, request):
         logger.info("---------")
         files: MultiValueDict = request.FILES
         if files and len(files) != 1:

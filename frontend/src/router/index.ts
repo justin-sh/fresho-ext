@@ -2,7 +2,7 @@ import {createRouter, createWebHistory} from 'vue-router'
 // @ts-ignore
 import HomeView from '../views/HomeView.vue'
 // @ts-ignore
-import FileUploadView from '../views/FileUploadView.vue'
+import FileUploadView from '@/views/FileUploadView.vue'
 // @ts-ignore
 import OrdersView from '@/views/OrdersView.vue'
 
