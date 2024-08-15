@@ -1,6 +1,6 @@
-import datetime
 import uuid
 
+import django
 from django.db import models
 
 
@@ -62,9 +62,9 @@ class DeliveryRun(models.Model):
     code = models.CharField(unique=True, blank=False, null=False, max_length=32)
     name = models.CharField(unique=True, blank=False, null=False, max_length=128)
     created_at = models.DateTimeField(blank=True, null=True, db_comment='UTC',
-                                      default=datetime.datetime.now(datetime.UTC))
+                                      default=django.utils.timezone.now)
     updated_at = models.DateTimeField(blank=True, null=True, db_comment='UTC',
-                                      default=datetime.datetime.now(datetime.UTC))
+                                      default=django.utils.timezone.now)
 
     class Meta:
         managed = True

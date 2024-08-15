@@ -93,12 +93,11 @@ class OrderViewSet(viewsets.ModelViewSet):
         # logger.info(len(data['supplier_orders']))
         return Response(ret)
 
-    """
-    update order detail
-    """
-
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def upload(self, request):
+        """
+        update order detail
+        """
         logger.info("---------")
         files: MultiValueDict = request.FILES
         if files and len(files) != 1:
@@ -132,10 +131,21 @@ class OrderViewSet(viewsets.ModelViewSet):
             }
             orders[x['Order Number']]['products'].append(p)
 
+        ret = {'failure':{'cnt': 0, 'data': []}, 'success': {'cnt': 0}}
         for k, v in orders.items():
             logger.info(k + '=>' + json.dumps(v))
+            try:
+                order = Order.objects.get(order_number=k)
+            except Exception as e:
+                ret['failure']['cnt'] += 1
+                ret['failure']['data'].append({'orderNo': k, 'msg': ex.args})
+                logger.error("update order products for %s failed" % k, ex.args)
+            else:
+                order.products = v
+                order.save()
+                ret['success']['cnt'] += 1
 
-        return Response(orders)
+        return Response(ret)
 
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny], url_path='detail-upload/')
     def uploadDetail(self, request):
