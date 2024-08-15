@@ -98,7 +98,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         """
         update order detail
         """
-        logger.info("---------")
+        # logger.info("---------")
         files: MultiValueDict = request.FILES
         if files and len(files) != 1:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -110,7 +110,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         f = TextIOWrapper(order_file, encoding="utf-8", newline="")
         reader = csv.DictReader(f)
-        logger.info(reader.fieldnames)
+        # logger.info(reader.fieldnames)
 
         orders = {}
 
@@ -118,7 +118,11 @@ class OrderViewSet(viewsets.ModelViewSet):
             if "'STD_FREIGHT_BOX'" == x['Product Code']:
                 continue
             if x['Order Number'] not in orders:
+                if float(x['Quantity']) < 0:
+                    x['Delivery Run'] = 'No Run Assigned'
                 orders[x['Order Number']] = {'products': [], 'run': x['Delivery Run']}
+                # logger.info(x)
+                # logger.info(orders[x['Order Number']])
             p = {
                 'code': x['Product Code'].strip("'"),
                 'group': x['Product Group'],
@@ -134,7 +138,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         runs = {x.name : x for x in DeliveryRun.objects.all()}
         ret = {'failure':{'cnt': 0, 'data': []}, 'success': {'cnt': 0}}
         for k, v in orders.items():
-            logger.info(k + '=>' + json.dumps(v))
+            # logger.info(k + '=>' + json.dumps(v))
             try:
                 order = Order.objects.get(order_number=k)
             except Exception as e:
