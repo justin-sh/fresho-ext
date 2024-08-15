@@ -1,6 +1,5 @@
 import csv
 import datetime
-import json
 import logging
 import os
 from io import TextIOWrapper
@@ -64,7 +63,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         rv = requests.get(url, params=params, cookies=cookies)
         data = rv.json()
         utc_now = datetime.datetime.now(datetime.UTC)
-        ret = {'success': {'cnt': 0}, 'failure': {'cnt': 0, 'data': []}, 'duplicate': {'cnt': 0}}
+        ret = {'success': {'cnt': 0}, 'failure': {'cnt': 0, 'data': []}, 'duplicate': {'cnt': 0}, 'update': {'cnt': 0}}
         for x in data['supplier_orders']:
             x['payable_total_in_cents'] = x['cached_payable_total_in_cents'] \
                 if x['cached_payable_total_in_cents'] else 0
@@ -84,7 +83,22 @@ class OrderViewSet(viewsets.ModelViewSet):
             else:
                 if ('id' in order_ser.errors or 'unique' == order_ser.errors['id'].code) or \
                         not ('order_number' in order_ser.errors or 'unique' == order_ser.errors['id'].code):
-                    ret['duplicate']['cnt'] += 1
+                    try:
+                        odr = Order.objects.get(id=x['id'])
+                        if odr.state in ('invoiced', 'cancelled', 'paid'):
+                            ret['duplicate']['cnt'] += 1
+                            continue
+                        update_ser = OrderSerializer(odr, data=x)
+                        if update_ser.is_valid():
+                            update_ser.save()
+                            ret['update']['cnt'] += 1
+                        else:
+                            ret['failure']['cnt'] += 1
+                            ret['failure']['data'].append(
+                                {'name': x['receiving_company_name'], 'msg': order_ser.errors}
+                            )
+                    except Exception as e:
+                        ret['duplicate']['cnt'] += 1
                 else:
                     ret['failure']['cnt'] += 1
                     ret['failure']['data'].append({'name': x['receiving_company_name'], 'msg': order_ser.errors})
@@ -92,6 +106,10 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         # logger.info(len(data['supplier_orders']))
         return Response(ret)
+
+    @action(detail=False, permission_classes=[permissions.AllowAny], url_path='sync-detail')
+    def sync_detail(self, reqest):
+        return Response('ok')
 
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def upload(self, request):
@@ -135,16 +153,16 @@ class OrderViewSet(viewsets.ModelViewSet):
             }
             orders[x['Order Number']]['products'].append(p)
 
-        runs = {x.name : x for x in DeliveryRun.objects.all()}
-        ret = {'failure':{'cnt': 0, 'data': []}, 'success': {'cnt': 0}}
+        runs = {x.name: x for x in DeliveryRun.objects.all()}
+        ret = {'failure': {'cnt': 0, 'data': []}, 'success': {'cnt': 0}}
         for k, v in orders.items():
             # logger.info(k + '=>' + json.dumps(v))
             try:
                 order = Order.objects.get(order_number=k)
             except Exception as e:
                 ret['failure']['cnt'] += 1
-                ret['failure']['data'].append({'orderNo': k, 'msg': ex.args})
-                logger.error("update order products for %s failed" % k, ex.args)
+                ret['failure']['data'].append({'orderNo': k, 'msg': e.args})
+                logger.error("update order products for %s failed" % k, e.args)
             else:
                 order.products = v['products']
                 order.delivery_run = runs[v['run']].code

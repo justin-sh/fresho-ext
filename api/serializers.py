@@ -34,7 +34,7 @@ class OrderSerializer(serializers.ModelSerializer):
                         'formatted_cached_payable_total': {'write_only': True},
                         'payable_total_in_cents': {'write_only': True},
                         'submitted_at': {'write_only': True},
-                        'state': {'write_only': True},
+                        # 'state': {'write_only': True},
                         'placed_by_name': {'write_only': True},
                         # 'delivery_run': {'write_only': True},
                         'delivery_at': {'write_only': True},
