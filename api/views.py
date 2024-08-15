@@ -12,7 +12,7 @@ from rest_framework import permissions, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from orders.models import Order
+from orders.models import Order, DeliveryRun
 from .serializers import UserSerializer, OrderSerializer
 
 logger = logging.getLogger(__file__)
@@ -43,7 +43,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             orders = orders.filter(products__icontains=product)
         if not del_date and not customer and not product:
             return orders.none()
-        return orders.order_by('receiving_company_name', '-delivery_date')[:200]
+        return orders.order_by('-delivery_date', 'delivery_run', 'receiving_company_name')[:200]
 
     @action(detail=False)
     def init(self, request):
@@ -131,6 +131,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             }
             orders[x['Order Number']]['products'].append(p)
 
+        runs = {x.name : x for x in DeliveryRun.objects.all()}
         ret = {'failure':{'cnt': 0, 'data': []}, 'success': {'cnt': 0}}
         for k, v in orders.items():
             logger.info(k + '=>' + json.dumps(v))
@@ -141,7 +142,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                 ret['failure']['data'].append({'orderNo': k, 'msg': ex.args})
                 logger.error("update order products for %s failed" % k, ex.args)
             else:
-                order.products = v
+                order.products = v['products']
+                order.delivery_run = runs[v['run']].code
                 order.save()
                 ret['success']['cnt'] += 1
 

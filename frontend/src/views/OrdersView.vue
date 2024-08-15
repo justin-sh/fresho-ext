@@ -52,12 +52,29 @@
     <!--    </b-card>-->
     <!--    https://bootstrap-vue.org/docs/components/table#complete-example -->
     <b-table v-if="orders.length>0"
+             :busy="loading_data"
              striped hover
-             @row-clicked="gotoFresho"
              :items="orders"
              :fields="fields">
       <template #cell(order_number)="row">
         <a :href="'https://app.fresho.com/supplier/orders/'+row.item.id" target="_blank"> {{ row.value }}</a>
+      </template>
+      <template #cell(show_details)="row">
+        <b-button size="sm" @click="row.toggleDetails" class="mr-2" variant="outline-info">
+          {{ row.detailsShowing ? 'Hide' : 'Show'}} Details
+        </b-button>
+      </template>
+      <template #row-details="row">
+        <b-card>
+          <b-row class="mb-2" v-for="p in row.item.products">
+            <b-col>{{ p.group }}</b-col>
+            <b-col sm="5" class="text-sm-right">{{ p.name }}</b-col>
+            <b-col>{{ p.qty }} {{ p.qtyType}}</b-col>
+            <b-col>{{ p.status }}</b-col>
+          </b-row>
+
+          <b-button size="sm" @click="row.toggleDetails" variant="outline-info">Hide Details</b-button>
+        </b-card>
       </template>
     </b-table>
   </b-card>
@@ -80,12 +97,15 @@ const product = ref('')
 const orders = ref([])
 
 const fields = [
-  {key: 'order_number', label: 'Order#'},
-  {key: 'receiving_company_name', label: 'Customer'},
-  {key: 'delivery_date'},
+  {key: 'order_number', label: 'Order#', sortable:true},
+  {key: 'receiving_company_name', label: 'Customer', sortable:true},
+  {key: 'delivery_run', label: 'Run', sortable:true},
+  {key: 'delivery_date', sortable:true},
+  {key: 'show_details', label: 'Action'},
 ]
 
 const init_loading = ref(false)
+const loading_data = ref(false)
 
 let abortController: AbortController | null = null;
 watchEffect(async () => {
@@ -95,6 +115,7 @@ watchEffect(async () => {
   }
 
   try {
+    loading_data.value = true
     abortController = new AbortController()
 
     const data = (await getOrdersWithFilters({
@@ -113,6 +134,7 @@ watchEffect(async () => {
     }
   } finally {
     abortController = null
+    loading_data.value = false
   }
 })
 

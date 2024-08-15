@@ -36,7 +36,7 @@ class OrderSerializer(serializers.ModelSerializer):
                         'submitted_at': {'write_only': True},
                         'state': {'write_only': True},
                         'placed_by_name': {'write_only': True},
-                        'delivery_run': {'write_only': True},
+                        # 'delivery_run': {'write_only': True},
                         'delivery_at': {'write_only': True},
                         'delivery_by': {'write_only': True},
                         'delivery_proof_url': {'write_only': True},
