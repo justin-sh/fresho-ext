@@ -1,10 +1,8 @@
 import csv
 import datetime
 import logging
-import os
 from io import TextIOWrapper
 
-import requests
 from django.contrib.auth.models import User
 from django.utils.datastructures import MultiValueDict
 from rest_framework import permissions, viewsets, status
@@ -12,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from orders.models import Order, DeliveryRun
+from . import remote
 from .serializers import UserSerializer, OrderSerializer
 
 logger = logging.getLogger(__file__)
@@ -46,22 +45,23 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def init(self, request):
-        cookies = {
-            '_capsule-digital-template_session': os.environ.get('FRESHO_COOKIE')
-        }
-        url = 'https://app.fresho.com/api/v1/my/suppliers/supplier_orders'
-
-        # logger.info(request.GET['delivery_date'])
-        params = {'page': 1,
-                  'per_page': 200,
-                  'q[order_state]': 'all',
-                  'q[receiving_company_id]': '',
-                  'q[delivery_run_code]': '',
-                  'q[delivery_date]': request.GET['delivery_date'],
-                  'sort': '-delivery_date,-submitted_at,-order_number',
-                  }
-        rv = requests.get(url, params=params, cookies=cookies)
-        data = rv.json()
+        # cookies = {
+        #     '_capsule-digital-template_session': os.environ.get('FRESHO_COOKIE')
+        # }
+        # url = 'https://app.fresho.com/api/v1/my/suppliers/supplier_orders'
+        #
+        # # logger.info(request.GET['delivery_date'])
+        # params = {'page': 1,
+        #           'per_page': 200,
+        #           'q[order_state]': 'all',
+        #           'q[receiving_company_id]': '',
+        #           'q[delivery_run_code]': '',
+        #           'q[delivery_date]': request.GET['delivery_date'],
+        #           'sort': '-delivery_date,-submitted_at,-order_number',
+        #           }
+        # rv = requests.get(url, params=params, cookies=cookies)
+        # data = rv.json()
+        data = remote.get_all_orders_by_date(request.GET['delivery_date'])
         utc_now = datetime.datetime.now(datetime.UTC)
         ret = {'success': {'cnt': 0}, 'failure': {'cnt': 0, 'data': []}, 'duplicate': {'cnt': 0}, 'update': {'cnt': 0}}
         for x in data['supplier_orders']:
@@ -88,6 +88,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                         if odr.state in ('invoiced', 'cancelled', 'paid'):
                             ret['duplicate']['cnt'] += 1
                             continue
+                        x['products'] = odr.products
                         update_ser = OrderSerializer(odr, data=x)
                         if update_ser.is_valid():
                             update_ser.save()
