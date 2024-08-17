@@ -1,5 +1,6 @@
 import csv
 import datetime
+import io
 import logging
 from io import TextIOWrapper
 
@@ -25,6 +26,53 @@ class UserViewSet(viewsets.ModelViewSet):
     # permission_classes = [permissions.IsAuthenticated]
 
 
+def process_csv_order_details(f):
+    reader = csv.DictReader(f)
+    to_updated_orders = {}
+
+    for x in reader:
+        if "'STD_FREIGHT_BOX'" == x['Product Code']:
+            continue
+        if x['Order Number'] not in to_updated_orders:
+            if float(x['Quantity']) < 0:
+                x['Delivery Run'] = 'No Run Assigned'
+            to_updated_orders[x['Order Number']] = {'products': [], 'run': x['Delivery Run']}
+            # logger.info(x)
+            # logger.info(orders[x['Order Number']])
+        p = {
+            'code': x['Product Code'].strip("'"),
+            'group': x['Product Group'],
+            'name': x['Product Name'],
+            'qty': float(x['Quantity']),
+            'qtyType': x['Qty Type'],
+            'customerNotes': x['Customer Notes'],
+            'supplierNotes': x['Supplier Notes'],
+            'status': x['Product Status'],
+        }
+        to_updated_orders[x['Order Number']]['products'].append(p)
+
+    return to_updated_orders
+
+
+def update_order_details(to_updated_orders):
+    runs = {x.name: x for x in DeliveryRun.objects.all()}
+    ret = {'failure': {'cnt': 0, 'data': []}, 'success': {'cnt': 0}}
+    for k, v in to_updated_orders.items():
+        # logger.info(k + '=>' + json.dumps(v))
+        try:
+            order = Order.objects.get(order_number=k)
+        except Exception as e:
+            ret['failure']['cnt'] += 1
+            ret['failure']['data'].append({'orderNo': k, 'msg': e.args})
+            logger.error("update order products for %s failed" % k, e.args)
+        else:
+            order.products = v['products']
+            order.delivery_run = runs[v['run']].code
+            order.save()
+            ret['success']['cnt'] += 1
+    return ret
+
+
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
 
@@ -33,15 +81,18 @@ class OrderViewSet(viewsets.ModelViewSet):
         del_date = self.request.query_params.get('delivery_date')
         customer = self.request.query_params.get('customer')
         product = self.request.query_params.get('product')
+        order_status = self.request.query_params.getlist('status[]')
         if del_date:
             orders = orders.filter(delivery_date=del_date)
         if customer:
             orders = orders.filter(receiving_company_name__icontains=customer)
         if product:
             orders = orders.filter(products__icontains=product)
+        if order_status:
+            orders = orders.filter(state__in=order_status)
         if not del_date and not customer and not product:
             return orders.none()
-        return orders.order_by('-delivery_date', 'delivery_run', 'receiving_company_name')[:200]
+        return orders.order_by('-delivery_date', 'receiving_company_name', 'delivery_run')[:200]
 
     @action(detail=False)
     def init(self, request):
@@ -93,15 +144,19 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response(ret)
 
     @action(detail=False, permission_classes=[permissions.AllowAny], url_path='sync-detail')
-    def sync_detail(self, reqest):
+    def update_order_details_by_download_product_total_file(self, reqest):
         delivery_date = self.request.query_params.get('delivery_date')
         orders = Order.objects.filter(delivery_date=delivery_date)
         ids = [order.id for order in orders]
-        remote.get_order_details_by_order_ids(ids)
-        return Response('ok')
+        order_details = remote.get_order_details_by_order_ids(ids)
+        to_updated_orders = process_csv_order_details(io.StringIO(order_details))
 
-    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
-    def upload(self, request):
+        ret = update_order_details(to_updated_orders)
+
+        return Response(ret)
+
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny], url_path='update-details')
+    def update_order_details_by_upload_product_total_file(self, request):
         """
         update order detail
         """
@@ -115,67 +170,53 @@ class OrderViewSet(viewsets.ModelViewSet):
         if order_file.size > 1 * 1024 * 1024:
             return Response("File is too big", status=status.HTTP_400_BAD_REQUEST)
 
-        f = TextIOWrapper(order_file, encoding="utf-8", newline="")
-        reader = csv.DictReader(f)
-        # logger.info(reader.fieldnames)
+        to_updated_orders = process_csv_order_details(TextIOWrapper(order_file, encoding="utf-8", newline=""))
 
-        orders = {}
-
-        for x in reader:
-            if "'STD_FREIGHT_BOX'" == x['Product Code']:
-                continue
-            if x['Order Number'] not in orders:
-                if float(x['Quantity']) < 0:
-                    x['Delivery Run'] = 'No Run Assigned'
-                orders[x['Order Number']] = {'products': [], 'run': x['Delivery Run']}
-                # logger.info(x)
-                # logger.info(orders[x['Order Number']])
-            p = {
-                'code': x['Product Code'].strip("'"),
-                'group': x['Product Group'],
-                'name': x['Product Name'],
-                'qty': float(x['Quantity']),
-                'qtyType': x['Qty Type'],
-                'customerNotes': x['Customer Notes'],
-                'supplierNotes': x['Supplier Notes'],
-                'status': x['Product Status'],
-            }
-            orders[x['Order Number']]['products'].append(p)
-
-        runs = {x.name: x for x in DeliveryRun.objects.all()}
-        ret = {'failure': {'cnt': 0, 'data': []}, 'success': {'cnt': 0}}
-        for k, v in orders.items():
-            # logger.info(k + '=>' + json.dumps(v))
-            try:
-                order = Order.objects.get(order_number=k)
-            except Exception as e:
-                ret['failure']['cnt'] += 1
-                ret['failure']['data'].append({'orderNo': k, 'msg': e.args})
-                logger.error("update order products for %s failed" % k, e.args)
-            else:
-                order.products = v['products']
-                order.delivery_run = runs[v['run']].code
-                order.save()
-                ret['success']['cnt'] += 1
+        ret = update_order_details(to_updated_orders)
 
         return Response(ret)
 
-    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny], url_path='detail-upload/')
-    def uploadDetail(self, request):
-        logger.info("---------")
-        files: MultiValueDict = request.FILES
-        if files and len(files) != 1:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        order_file = files.get("orderFile")
-
-        # max size : 1M
-        if order_file.size > 1 * 1024 * 1024:
-            return Response("File is too big", status=status.HTTP_400_BAD_REQUEST)
-
-        f = TextIOWrapper(order_file, encoding="utf-8", newline="")
-        reader = csv.DictReader(f)
-        logger.info(reader.fieldnames)
-        for x in reader:
-            logger.info(x)
-
-        return Response("ok from viewsets")
+        # f = TextIOWrapper(order_file, encoding="utf-8", newline="")
+        # reader = csv.DictReader(f)
+        # # logger.info(reader.fieldnames)
+        #
+        # orders = {}
+        #
+        # for x in reader:
+        #     if "'STD_FREIGHT_BOX'" == x['Product Code']:
+        #         continue
+        #     if x['Order Number'] not in orders:
+        #         if float(x['Quantity']) < 0:
+        #             x['Delivery Run'] = 'No Run Assigned'
+        #         orders[x['Order Number']] = {'products': [], 'run': x['Delivery Run']}
+        #         # logger.info(x)
+        #         # logger.info(orders[x['Order Number']])
+        #     p = {
+        #         'code': x['Product Code'].strip("'"),
+        #         'group': x['Product Group'],
+        #         'name': x['Product Name'],
+        #         'qty': float(x['Quantity']),
+        #         'qtyType': x['Qty Type'],
+        #         'customerNotes': x['Customer Notes'],
+        #         'supplierNotes': x['Supplier Notes'],
+        #         'status': x['Product Status'],
+        #     }
+        #     orders[x['Order Number']]['products'].append(p)
+        #
+        # runs = {x.name: x for x in DeliveryRun.objects.all()}
+        # ret = {'failure': {'cnt': 0, 'data': []}, 'success': {'cnt': 0}}
+        # for k, v in orders.items():
+        #     # logger.info(k + '=>' + json.dumps(v))
+        #     try:
+        #         order = Order.objects.get(order_number=k)
+        #     except Exception as e:
+        #         ret['failure']['cnt'] += 1
+        #         ret['failure']['data'].append({'orderNo': k, 'msg': e.args})
+        #         logger.error("update order products for %s failed" % k, e.args)
+        #     else:
+        #         order.products = v['products']
+        #         order.delivery_run = runs[v['run']].code
+        #         order.save()
+        #         ret['success']['cnt'] += 1
+        #
+        # return Response(ret)

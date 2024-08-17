@@ -34,6 +34,11 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
+if env('HTTP_DEBUG') == 'on':
+    from http.client import HTTPConnection
+
+    HTTPConnection.debuglevel = 1
+
 ALLOWED_HOSTS = ['desktop-uqef36h', 'localhost']
 
 # Application definition
@@ -188,6 +193,16 @@ LOGGING = {
     'loggers': {
         'root': {
             'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+        },
+        'requests.packages.urllib3': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+        },
+        'urllib3': {
+            'handlers': ['console'],
             'level': 'DEBUG',
             'formatter': 'verbose',
         },

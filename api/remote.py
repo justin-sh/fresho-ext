@@ -53,12 +53,19 @@ def get_all_orders_by_date(delivery_date, per_page=200):
               'sort': '-delivery_date,-submitted_at,-order_number',
               }
     url = 'https://app.fresho.com/api/v1/my/suppliers/supplier_orders'
-    return client.get(url, params=params).json()
+    rv = client.get(url, params=params).json()
+    if 'error' in rv:
+        raise Exception("No login information. Plz check the env config.")
+    return rv
 
 
 def get_order_details_by_order_ids(ids):
     # step 1: submit job
     # result: {"job_id":"955c715dd02a9b5f9a3c860d"}
+
+    # get fresho-app-csrf-token
+    rv = client.get('https://app.fresho.com/api/v1/companies/b181ee08-2214-46ec-ad1e-926a2bbfb8fb').json()
+    csrf_token = client.cookies.get('fresho-app-csrf-token')
 
     url1 = 'https://app.fresho.com/api/v1/my/suppliers/reports'
     params = {
@@ -71,8 +78,7 @@ def get_order_details_by_order_ids(ids):
         }
     }
 
-    ret1 = client.post(url1, json=params).json()
-    logger.debug(ret1)
+    ret1 = client.post(url1, json=params, headers={'x-csrf-token': csrf_token}).json()
 
     # step 2: get job result
     # result: {
@@ -94,7 +100,7 @@ def get_order_details_by_order_ids(ids):
     ret2 = {"status": "working", "result": {"result_data": {"report": {"temporary_url": ''}}}}
     loop_max_cnt = 0
     while ret2['status'] == 'working' and loop_max_cnt < 10:
-        time.sleep(0.05)
+        time.sleep(0.08)
         loop_max_cnt += 1
         url2 = 'https://app.fresho.com/api/v1/public/jobs/' + ret1['job_id']
         ret2 = client.get(url2).json()
@@ -102,6 +108,8 @@ def get_order_details_by_order_ids(ids):
 
     # step3 : read csv file
     file_url = ret2['result']['result_data']['report']['temporary_url']
-    csvData = requests.get(file_url).text
+    r = requests.get(file_url)
+    r.encoding = 'utf-8'
 
-    logger.debug(csvData)
+    # logger.debug(r.text)
+    return r.text

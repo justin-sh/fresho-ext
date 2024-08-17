@@ -12,6 +12,7 @@ export interface OrderFilter {
     delivery_date: string
     customer: string
     product: string
+    status: string[]
 }
 
 export interface OptionConfig{
