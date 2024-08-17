@@ -44,9 +44,6 @@
   </b-card>
 
   <b-card>
-    <!--    <b-card-sub-title>-->
-    <!--      <span class="inline fw-light fs-6">Total Count: {{ orders.length }}</span>-->
-    <!--    </b-card-sub-title>-->
     <template #header>
       <div class="row clear">
         <div class="col-4 align-content-center">
@@ -206,18 +203,6 @@ const syncDetails = async () => {
   await syncOrderDetails(deliveryDate.value)
   detail_syncing.value = false
   await loading_data()
-}
-
-const readOrderFile = async (file: File | null) => {
-  if (file === null) {
-    console.log("no file selected")
-    return
-  }
-
-  console.log(file.name)
-  console.log(file.size)
-
-  await uploadOrdersCsv(file)
 }
 
 watch([deliveryDate, customer, product, status], async ([]) => {
