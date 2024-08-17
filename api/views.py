@@ -45,22 +45,6 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def init(self, request):
-        # cookies = {
-        #     '_capsule-digital-template_session': os.environ.get('FRESHO_COOKIE')
-        # }
-        # url = 'https://app.fresho.com/api/v1/my/suppliers/supplier_orders'
-        #
-        # # logger.info(request.GET['delivery_date'])
-        # params = {'page': 1,
-        #           'per_page': 200,
-        #           'q[order_state]': 'all',
-        #           'q[receiving_company_id]': '',
-        #           'q[delivery_run_code]': '',
-        #           'q[delivery_date]': request.GET['delivery_date'],
-        #           'sort': '-delivery_date,-submitted_at,-order_number',
-        #           }
-        # rv = requests.get(url, params=params, cookies=cookies)
-        # data = rv.json()
         data = remote.get_all_orders_by_date(request.GET['delivery_date'])
         utc_now = datetime.datetime.now(datetime.UTC)
         ret = {'success': {'cnt': 0}, 'failure': {'cnt': 0, 'data': []}, 'duplicate': {'cnt': 0}, 'update': {'cnt': 0}}
@@ -110,6 +94,10 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, permission_classes=[permissions.AllowAny], url_path='sync-detail')
     def sync_detail(self, reqest):
+        delivery_date = self.request.query_params.get('delivery_date')
+        orders = Order.objects.filter(delivery_date=delivery_date)
+        ids = [order.id for order in orders]
+        remote.get_order_details_by_order_ids(ids)
         return Response('ok')
 
     @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
