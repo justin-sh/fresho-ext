@@ -41,16 +41,10 @@
         </div>
       </div>
     </b-form>
-  </b-card>
 
-  <b-card>
-    <template #header>
+    <template #footer>
       <div class="row clear">
-        <div class="col-4 align-content-center">
-          <span class="fw-bold fs-4">Orders </span>
-          <span class="inline fw-light fs-6" v-if="!data_loading">(Total {{ orders.length }})</span>
-        </div>
-        <div class="col text-right">
+        <div class="col">
           <b-button variant="outline-primary"
                     size="sm"
                     :loading="init_loading"
@@ -64,7 +58,22 @@
                     @click.stop="syncDetails">
             S2: Sync Detail
           </b-button>
+          <b-button variant="outline-primary"
+                    class="ms-2"
+                    size="sm"
+                    @click.stop="goDeptRepot">
+            Dept Report
+          </b-button>
         </div>
+      </div>
+    </template>
+  </b-card>
+
+  <b-card>
+    <template #header>
+      <div class="col-4 align-content-center">
+        <span class="fw-bold fs-4">Orders </span>
+        <span class="inline fw-light fs-6" v-if="!data_loading">(Total {{ orders.length }})</span>
       </div>
     </template>
     <b-table-simple striped hover>
@@ -129,9 +138,12 @@
 <script lang="ts" setup>
 import {ref, watch} from "vue";
 import {CanceledError} from "axios";
-import {getOrdersWithFilters, initOrders, syncOrderDetails, uploadOrdersCsv} from '@/api'
+import {getOrdersWithFilters, initOrders, syncOrderDetails} from '@/api'
 
-import {formatInTimeZone} from "date-fns-tz";
+import {formatInTimeZone, toDate} from "date-fns-tz";
+import {onBeforeRouteLeave, useRouter} from "vue-router";
+
+const router = useRouter()
 
 const localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -204,6 +216,23 @@ const syncDetails = async () => {
   detail_syncing.value = false
   await loading_data()
 }
+
+const goDeptRepot = () => {
+  router.push({name: 'dept-report'})
+}
+
+onBeforeRouteLeave((to, before) => {
+  if (to.name == 'dept-report') {
+    to.meta.orders = orders.value
+
+    const weedDay = toDate(deliveryDate.value).getDay()
+    if ([2, 4].includes(weedDay)) {
+      to.meta.ordered_run = ['ED', 'EE', 'RM1', 'CT', 'S', 'N', 'LE', 'RM2', 'W', 'PU', 'CA', 'EA', '~NR']
+    } else {
+      to.meta.ordered_run = ['ED', 'EE', 'RM1', 'S', 'CT', 'N', 'LE', 'RM2', 'W', 'PU', 'CA', 'EA', '~NR']
+    }
+  }
+})
 
 watch([deliveryDate, customer, product, status], async ([]) => {
   await loading_data()

@@ -5,6 +5,8 @@ import HomeView from '../views/HomeView.vue'
 import FileUploadView from '@/views/FileUploadView.vue'
 // @ts-ignore
 import OrdersView from '@/views/OrdersView.vue'
+// @ts-ignore
+import DepartmentReportView from '@/views/DepartmentReportView.vue'
 
 // @ts-ignore
 // @ts-ignore
@@ -31,6 +33,14 @@ const router = createRouter({
             // this generates a separate chunk (About.[hash].js) for this route
             // which is lazy-loaded when the route is visited.
             component: OrdersView
+        },
+        {
+            path: '/report/dept',
+            name: 'dept-report',
+            // route level code-splitting
+            // this generates a separate chunk (About.[hash].js) for this route
+            // which is lazy-loaded when the route is visited.
+            component: DepartmentReportView
         },
         {
             path: '/about',

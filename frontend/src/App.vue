@@ -63,3 +63,11 @@
 import {RouterLink, RouterView} from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 </script>
+
+<style scoped>
+@media print {
+  .container {
+    max-width: 100% !important;
+  }
+}
+</style>
