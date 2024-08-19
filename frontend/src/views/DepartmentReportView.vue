@@ -1,14 +1,17 @@
 <template>
-  <table class="w-100 border mt-2 pagebreak" v-for="(v,k) in deptOrders">
+  <table class="w-100 mt-2 pagebreak" v-for="(v,k) in deptOrders">
     <caption class="caption-top fw-bold">{{ k }}</caption>
     <template v-for="run in ordered_run">
+      <tr v-if="run in v">
+        <td colspan="4" class="fw-bold pt-2">Run: {{ run }}</td>
+      </tr>
       <template v-for="(pv,pk) in v[run]">
         <tr class="border fw-bold">
           <td colspan="4">{{ pk }}</td>
         </tr>
         <tr class="border" v-for="c in pv['cus_order']">
           <td class="border col-7">{{ c.c + ' - ' + run }}</td>
-          <td class="border col">{{ c.p.qty }}</td>
+          <td class="border col fw-bold">{{ c.p.qty }}</td>
           <td class="border col">{{ c.p.qtyType }}</td>
           <td class="border col">
             <span v-if="c.p.supplierNotes" class="fw-bold">supplier:</span>{{ c.p.supplierNotes }}
@@ -59,6 +62,8 @@ orders?.forEach((order) => {
   .pagebreak {
     clear: both;
     page-break-after: always;
+    font-size: 0.75rem;
   }
+
 }
 </style>

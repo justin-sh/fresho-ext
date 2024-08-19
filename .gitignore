@@ -5,3 +5,5 @@ env/
 **/__pycache__/
 
 run.bat
+.DS_Store
+**/*/.DS_Store
