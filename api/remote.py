@@ -3,6 +3,7 @@ import os
 import time
 
 import requests
+from bs4 import BeautifulSoup as BS
 from requests.cookies import create_cookie
 
 logger = logging.getLogger(__file__)
@@ -113,3 +114,29 @@ def get_order_details_by_order_ids(ids):
 
     # logger.debug(r.text)
     return r.text
+
+
+def get_order_delivery_url():
+    url0 = 'https://app.fresho.com/companies/b181ee08-2214-46ec-ad1e-926a2bbfb8fb/selling/deliveries'
+    rv0 = client.get(url0).text
+    bs = BS(rv0, 'lxml')
+    url = bs.select_one('a[data-fresho-item="view-recent-pods"]').attrs['href']
+    # logger.info(url)
+    return 'https://app.fresho.com' + url
+
+
+def get_recently_delivery_proof():
+    url = get_order_delivery_url()
+    rv = client.get(url).text
+    bs = BS(rv, 'lxml')
+    pods = bs.select('div.test-recent-deliveries-table tbody>tr')
+    data = {}
+    for pod in pods:
+        h = pod.select_one('a')
+        proof_url = h.attrs['href'].strip()
+        order_no = h.string.strip()[1:]
+        delivery_by = pod.select_one('td[data-title="Delivered By"]').string.strip()
+        delivery_at = pod.select_one('span.test-timestamp').attrs['data-timestamp'].strip()
+        data[order_no] = {'url': proof_url, 'delivery_by': delivery_by, 'delivery_at': delivery_at}
+        # logger.info('%s %s %s %s' % (proof_url, order_no, delivery_by, delivery_at))
+    return data

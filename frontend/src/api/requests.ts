@@ -7,3 +7,4 @@ export const uploadOrdersCsv = (f) => axios.postForm('/api/orders/update-details
 export const getOrdersWithFilters = (params: OrderFilter, options?: OptionConfig) => axios.get('/api/orders/', {params, ...options})
 export const initOrders = (delivery_date: string) => axios.get('/api/orders/init/', {params: {delivery_date}})
 export const syncOrderDetails = (delivery_date: string) => axios.get('/api/orders/sync-detail/', {params: {delivery_date}})
+export const syncOrderDeliveryProofs = () => axios.get('/api/orders/sync-delivery-proof/')

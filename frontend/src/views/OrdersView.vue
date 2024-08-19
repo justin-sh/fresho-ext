@@ -64,6 +64,12 @@
                     @click.stop="goDeptRepot">
             Dept Report
           </b-button>
+          <b-button variant="outline-primary"
+                    class="ms-2"
+                    size="sm"
+                    @click.stop="syncDeliveryProofs">
+            Sync Delivery Proof
+          </b-button>
         </div>
       </div>
     </template>
@@ -138,7 +144,7 @@
 <script lang="ts" setup>
 import {ref, watch} from "vue";
 import {CanceledError} from "axios";
-import {getOrdersWithFilters, initOrders, syncOrderDetails} from '@/api'
+import {getOrdersWithFilters, initOrders, syncOrderDetails, syncOrderDeliveryProofs} from '@/api'
 
 import {formatInTimeZone, toDate} from "date-fns-tz";
 import {onBeforeRouteLeave, useRouter} from "vue-router";
@@ -165,6 +171,7 @@ const fields = [
 
 const init_loading = ref(false)
 const detail_syncing = ref(false)
+const syncing_del_proof = ref(false)
 const data_loading = ref(false)
 
 let abortController: AbortController | null = null;
@@ -215,6 +222,12 @@ const syncDetails = async () => {
   await syncOrderDetails(deliveryDate.value)
   detail_syncing.value = false
   await loading_data()
+}
+const syncDeliveryProofs = async () => {
+  syncing_del_proof.value = true
+  await syncOrderDeliveryProofs()
+  syncing_del_proof.value = false
+  // await loading_data()
 }
 
 const goDeptRepot = () => {

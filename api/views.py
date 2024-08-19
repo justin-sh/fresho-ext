@@ -220,3 +220,27 @@ class OrderViewSet(viewsets.ModelViewSet):
         #         ret['success']['cnt'] += 1
         #
         # return Response(ret)
+
+    @action(detail=False, permission_classes=[permissions.AllowAny], url_path='sync-delivery-proof')
+    def update_order_delivery_proof(self, request):
+        # logger.info("step1: get delivery proof page url")
+        data = remote.get_recently_delivery_proof()
+        ret = {'failure': {'cnt': 0, 'data': []}, 'duplicate': {'cnt': 0}, 'success': {'cnt': 0}}
+        for order_no, v in data.items():
+            try:
+                order = Order.objects.get(order_number=order_no)
+            except Exception as e:
+                ret['failure']['cnt'] += 1
+                ret['failure']['data'].append({'orderNo': order_no, 'msg': e.args})
+                logger.error("update order products for %s failed" % order_no, e.args)
+            else:
+                if order.delivery_proof_url:
+                    ret['duplicate']['cnt'] += 1
+                else:
+                    order.delivery_by = v['delivery_by']
+                    order.delivery_at = datetime.datetime.fromisoformat(v['delivery_at'])
+                    order.delivery_proof_url = v['url']
+                    order.save()
+                    ret['success']['cnt'] += 1
+
+        return Response(ret)
