@@ -10,7 +10,7 @@
           <td colspan="4">{{ pk }}</td>
         </tr>
         <tr class="border" v-for="c in pv['cus_order']">
-          <td class="border col-7">{{ c.c + ' - ' + run }}</td>
+          <td class="border col-6">{{ c.c + ' - ' + run }}</td>
           <td class="border col fw-bold">{{ c.p.qty }}</td>
           <td class="border col">{{ c.p.qtyType }}</td>
           <td class="border col">
@@ -42,10 +42,11 @@ const deptOrders = {
   "SLICING CHICKEN": {},
 }
 
+console.log(orders)
 const order_date = orders && orders.length > 0 ? toDate(orders[0].delivery_date) : new Date
 orders?.forEach((order) => {
   const run = order.delivery_run
-  order.products.forEach((p) => {
+  order.products?.forEach((p) => {
     const pg = p.group.toUpperCase()
     if (pg in deptOrders) {
       deptOrders[pg][run] = deptOrders[pg][run] || {}
@@ -61,7 +62,7 @@ orders?.forEach((order) => {
 @media print {
   .pagebreak {
     clear: both;
-    page-break-after: always;
+    break-after: page;
     font-size: 0.75rem;
   }
 
