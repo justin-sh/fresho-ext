@@ -136,7 +136,11 @@ def get_recently_delivery_proof():
         proof_url = h.attrs['href'].strip()
         order_no = h.string.strip()[1:]
         delivery_by = pod.select_one('td[data-title="Delivered By"]').string.strip()
+        delivery_proof = pod.select_one('td[data-title="Proof Collected"]').string.strip()
         delivery_at = pod.select_one('span.test-timestamp').attrs['data-timestamp'].strip()
-        data[order_no] = {'url': proof_url, 'delivery_by': delivery_by, 'delivery_at': delivery_at}
+        data[order_no] = {'url': proof_url,
+                          'delivery_by': delivery_by,
+                          'delivery_proof': delivery_proof,
+                          'delivery_at': delivery_at}
         # logger.info('%s %s %s %s' % (proof_url, order_no, delivery_by, delivery_at))
     return data

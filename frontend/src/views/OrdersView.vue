@@ -67,6 +67,7 @@
           <b-button variant="outline-primary"
                     class="ms-2"
                     size="sm"
+                    :loading="syncing_del_proof"
                     @click.stop="syncDeliveryProofs">
             Sync Delivery Proof
           </b-button>
@@ -162,10 +163,12 @@ const orders = ref([])
 
 const fields = [
   {key: 'order_number', label: 'Order#', sortable: true},
+  {key: 'delivery_date_md', label: 'Date', sortable: true},
   {key: 'receiving_company_name', label: 'Customer', sortable: true},
   {key: 'state', label: 'State', sortable: true},
-  {key: 'delivery_run', label: 'Run', sortable: true},
-  {key: 'delivery_date', label: 'Date', sortable: true},
+  {key: 'delivery_by', label: 'By', sortable: true},
+  {key: 'delivery_at_hm', label: 'At', sortable: true},
+  {key: 'delivery_proof', label: 'Proof', sortable: true},
   // {key: 'show_details', label: 'Action'},
 ]
 
@@ -199,6 +202,8 @@ const loading_data = async () => {
 
     orders.value = data.map(function (x) {
       x.detailsShowing = false
+      x.delivery_date_md = formatInTimeZone(new Date(x.delivery_date), localTZ, "MM-dd")
+      x.delivery_at_hm = x.delivery_at?formatInTimeZone(new Date(x.delivery_at), localTZ, "HH:mm"):''
       return x
     })
 
@@ -227,7 +232,7 @@ const syncDeliveryProofs = async () => {
   syncing_del_proof.value = true
   await syncOrderDeliveryProofs()
   syncing_del_proof.value = false
-  // await loading_data()
+  await loading_data()
 }
 
 const goDeptRepot = () => {

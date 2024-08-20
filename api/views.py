@@ -238,6 +238,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                     ret['duplicate']['cnt'] += 1
                 else:
                     order.delivery_by = v['delivery_by']
+                    order.delivery_proof = v['delivery_proof']
                     order.delivery_at = datetime.datetime.fromisoformat(v['delivery_at'])
                     order.delivery_proof_url = v['url']
                     order.save()
