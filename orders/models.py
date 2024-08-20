@@ -29,6 +29,7 @@ class Order(models.Model):
     products = models.JSONField(blank=True, null=True)
     delivery_at = models.DateTimeField(blank=True, null=True, db_comment='UTC')
     delivery_by = models.CharField(max_length=255, blank=True, null=True)
+    delivery_proof = models.CharField(max_length=128, blank=True, null=True)
     delivery_proof_url = models.CharField(max_length=255, blank=True, null=True)
     locked = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True, db_comment='UTC', default=django.utils.timezone.now)
