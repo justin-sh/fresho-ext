@@ -189,7 +189,7 @@ LOGGING = {
             "level": "DEBUG",
             "class": "logging.FileHandler",
             "encoding": "utf-8",
-            "filename": BASE_DIR / "logs/frsho-ext.log",
+            "filename": BASE_DIR / "logs/fresho-ext.log",
         },
         "sql": {
             "level": "DEBUG",
