@@ -176,51 +176,6 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         return Response(ret)
 
-        # f = TextIOWrapper(order_file, encoding="utf-8", newline="")
-        # reader = csv.DictReader(f)
-        # # logger.info(reader.fieldnames)
-        #
-        # orders = {}
-        #
-        # for x in reader:
-        #     if "'STD_FREIGHT_BOX'" == x['Product Code']:
-        #         continue
-        #     if x['Order Number'] not in orders:
-        #         if float(x['Quantity']) < 0:
-        #             x['Delivery Run'] = 'No Run Assigned'
-        #         orders[x['Order Number']] = {'products': [], 'run': x['Delivery Run']}
-        #         # logger.info(x)
-        #         # logger.info(orders[x['Order Number']])
-        #     p = {
-        #         'code': x['Product Code'].strip("'"),
-        #         'group': x['Product Group'],
-        #         'name': x['Product Name'],
-        #         'qty': float(x['Quantity']),
-        #         'qtyType': x['Qty Type'],
-        #         'customerNotes': x['Customer Notes'],
-        #         'supplierNotes': x['Supplier Notes'],
-        #         'status': x['Product Status'],
-        #     }
-        #     orders[x['Order Number']]['products'].append(p)
-        #
-        # runs = {x.name: x for x in DeliveryRun.objects.all()}
-        # ret = {'failure': {'cnt': 0, 'data': []}, 'success': {'cnt': 0}}
-        # for k, v in orders.items():
-        #     # logger.info(k + '=>' + json.dumps(v))
-        #     try:
-        #         order = Order.objects.get(order_number=k)
-        #     except Exception as e:
-        #         ret['failure']['cnt'] += 1
-        #         ret['failure']['data'].append({'orderNo': k, 'msg': e.args})
-        #         logger.error("update order products for %s failed" % k, e.args)
-        #     else:
-        #         order.products = v['products']
-        #         order.delivery_run = runs[v['run']].code
-        #         order.save()
-        #         ret['success']['cnt'] += 1
-        #
-        # return Response(ret)
-
     @action(detail=False, permission_classes=[permissions.AllowAny], url_path='sync-delivery-proof')
     def update_order_delivery_proof(self, request):
         # logger.info("step1: get delivery proof page url")
@@ -232,7 +187,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 ret['failure']['cnt'] += 1
                 ret['failure']['data'].append({'orderNo': order_no, 'msg': e.args})
-                logger.error("update order products for %s failed" % order_no, e.args)
+                logger.error("update order products for %s failed: %s" % order_no, e.args)
             else:
                 if order.delivery_proof_url:
                     ret['duplicate']['cnt'] += 1

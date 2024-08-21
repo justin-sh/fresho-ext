@@ -158,6 +158,12 @@ REST_FRAMEWORK = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://desktop-uqef36h:5173",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://desktop-uqef36h:5173",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
