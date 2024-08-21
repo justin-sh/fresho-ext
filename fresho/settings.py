@@ -188,11 +188,13 @@ LOGGING = {
         "file": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
+            "encoding": "utf-8",
             "filename": BASE_DIR / "logs/frsho-ext.log",
         },
         "sql": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
+            "encoding": "utf-8",
             "filename": BASE_DIR / "logs/sql.log",
         },
     },
