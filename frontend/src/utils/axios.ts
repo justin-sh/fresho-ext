@@ -6,7 +6,7 @@ import type {AxiosInstance} from 'axios'
 import {stringify} from 'qs'
 
 export const axios: AxiosInstance = axiosFactory.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: import.meta.env.VITE_API_HOST,
     withCredentials: true,
     paramsSerializer: params => stringify(params, {arrayFormat: 'brackets', skipNulls: true})
 })
