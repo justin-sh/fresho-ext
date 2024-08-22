@@ -173,7 +173,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     "formatters": {
         "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "format": "{asctime} {levelname} --- [{module}] {message}",
             "style": "{",
         },
         "simple": {
@@ -184,41 +184,43 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
         "file": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
             "encoding": "utf-8",
             "filename": BASE_DIR / "logs/fresho-ext.log",
+            'formatter': 'verbose',
+        },
+        "http": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "encoding": "utf-8",
+            "filename": BASE_DIR / "logs/http.log",
+            'formatter': 'verbose',
         },
         "sql": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
             "encoding": "utf-8",
             "filename": BASE_DIR / "logs/sql.log",
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         'root': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
-            'formatter': 'verbose',
-        },
-        'requests.packages.urllib3': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'formatter': 'verbose',
         },
         'urllib3': {
-            'handlers': ['console'],
+            'handlers': ['http'],
             'level': 'DEBUG',
-            'formatter': 'verbose',
         },
         'django.db.backends': {
             'handlers': ['sql'],
             'level': 'DEBUG',
             "propagate": False,
-            'formatter': 'verbose',
         },
     },
 }

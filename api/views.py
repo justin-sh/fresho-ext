@@ -64,7 +64,7 @@ def update_order_details(to_updated_orders):
         except Exception as e:
             ret['failure']['cnt'] += 1
             ret['failure']['data'].append({'orderNo': k, 'msg': e.args})
-            logger.error("update order products for %s failed" % k, e.args)
+            logger.exception("update order products for %s failed: %s" % (k, e.args))
         else:
             order.products = v['products']
             order.delivery_run = runs[v['run']].code
@@ -187,7 +187,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 ret['failure']['cnt'] += 1
                 ret['failure']['data'].append({'orderNo': order_no, 'msg': e.args})
-                logger.error("update order products for %s failed: %s" % order_no, e.args)
+                logger.exception("update order products for %s failed: %s" % (order_no, e.args))
             else:
                 if order.delivery_proof_url:
                     ret['duplicate']['cnt'] += 1
