@@ -6,8 +6,8 @@
   >
     <b-form inline>
       <div class="row">
-        <div class="flex justify-content-center col-3">
-          <label for="datepicker" class="justify-content-start">Delivery date</label>
+        <div class="col-3">
+          <label for="datepicker">Delivery date</label>
           <b-form-input
               type="date"
               id="datepicker"
@@ -18,7 +18,7 @@
         </div>
         <div class="col">
           <label>State</label>
-          <div>
+          <div class="d-flex">
             <b-form-checkbox-group v-model="status">
               <b-form-checkbox value="in_progress">Process</b-form-checkbox>
               <b-form-checkbox value="submitted">Submitted</b-form-checkbox>
@@ -27,6 +27,7 @@
               <b-form-checkbox value="paid">Paid</b-form-checkbox>
               <b-form-checkbox value="cancelled">Cancelled</b-form-checkbox>
             </b-form-checkbox-group>
+            <b-form-checkbox v-model="credit" value="yes" uncheckedValue="no">Credit</b-form-checkbox>
           </div>
         </div>
       </div>
@@ -158,6 +159,7 @@ const deliveryDate = ref(formatInTimeZone(new Date(), localTZ, "yyyy-MM-dd"))
 const customer = ref('')
 const product = ref('')
 const status = ref(['submitted', 'accepted', 'invoiced', 'paid'])
+const credit = ref('no')
 
 const orders = ref([])
 
@@ -195,6 +197,7 @@ const loading_data = async () => {
           customer: customer.value,
           product: product.value,
           status: status.value,
+          credit: credit.value,
         },
         {signal: abortController.signal}
     )).data
@@ -252,7 +255,7 @@ onBeforeRouteLeave((to, before) => {
   }
 })
 
-watch([deliveryDate, customer, product, status], async ([]) => {
+watch([deliveryDate, customer, product, status, credit], async ([]) => {
   await loading_data()
 }, {immediate: true})
 

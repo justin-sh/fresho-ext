@@ -1,4 +1,3 @@
-./.env
 env/
 .idea/
 
@@ -7,3 +6,4 @@ env/
 run.bat
 .DS_Store
 **/*/.DS_Store
+/.env

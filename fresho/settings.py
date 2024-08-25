@@ -157,6 +157,7 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
     "http://localhost:5173",
     "http://desktop-uqef36h:5173",
 ]

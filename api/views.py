@@ -82,6 +82,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         customer = self.request.query_params.get('customer')
         product = self.request.query_params.get('product')
         order_status = self.request.query_params.getlist('status[]')
+        credit = self.request.query_params.get('credit')
         if del_date:
             orders = orders.filter(delivery_date=del_date)
         if customer:
@@ -90,7 +91,12 @@ class OrderViewSet(viewsets.ModelViewSet):
             orders = orders.filter(products__icontains=product)
         if order_status:
             orders = orders.filter(state__in=order_status)
-        if not del_date and not customer and not product:
+        # logger.info('credit->' + credit)
+        if not order_status and credit == 'yes':
+            orders = orders.filter(payable_total_in_cents__lt=0)
+        elif credit == 'no':
+            orders = orders.filter(payable_total_in_cents__gte=0)
+        if not del_date and not customer and not product and not credit and not order_status:
             return orders.none()
         return orders.order_by('-delivery_date', 'receiving_company_name', 'delivery_run')[:200]
 
