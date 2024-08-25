@@ -13,6 +13,7 @@ export interface OrderFilter {
     customer: string
     product: string
     status: string[]
+    credit: string
 }
 
 export interface OptionConfig{
