@@ -16,7 +16,7 @@
 
 <script lang="ts" setup>
 import { ref } from "vue"
-import {uploadOrdersDetailCsv, uploadOrdersCsv} from '@/api'
+import {uploadOrdersCsv} from '@/api'
 
 const init_loading = ref(false)
 
