@@ -7,3 +7,4 @@ run.bat
 .DS_Store
 **/*/.DS_Store
 /.env
+/frontend/components.d.ts
