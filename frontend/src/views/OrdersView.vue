@@ -20,12 +20,12 @@
           <label>State</label>
           <div class="d-flex">
             <b-form-checkbox-group v-model="status">
-              <b-form-checkbox value="in_progress">Process</b-form-checkbox>
-              <b-form-checkbox value="submitted">Submitted</b-form-checkbox>
-              <b-form-checkbox value="accepted">Accepted</b-form-checkbox>
-              <b-form-checkbox value="invoiced">Invoiced</b-form-checkbox>
-              <b-form-checkbox value="paid">Paid</b-form-checkbox>
-              <b-form-checkbox value="cancelled">Cancelled</b-form-checkbox>
+              <b-form-checkbox value="in_progress" switch>Process</b-form-checkbox>
+              <b-form-checkbox value="submitted" switch>Submitted</b-form-checkbox>
+              <b-form-checkbox value="accepted" switch>Accepted</b-form-checkbox>
+              <b-form-checkbox value="invoiced" switch>Invoiced</b-form-checkbox>
+              <b-form-checkbox value="paid" switch>Paid</b-form-checkbox>
+              <b-form-checkbox value="cancelled" switch>Cancelled</b-form-checkbox>
             </b-form-checkbox-group>
             <b-form-checkbox v-model="credit" value="yes" uncheckedValue="no">Credit</b-form-checkbox>
           </div>
