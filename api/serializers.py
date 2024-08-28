@@ -37,7 +37,7 @@ class OrderSerializer(serializers.ModelSerializer):
                         # 'products': {'write_only': True},
                         # 'state': {'write_only': True},
                         'placed_by_name': {'write_only': True},
-                        'delivery_run': {'write_only': True},
+                        # 'delivery_run': {'write_only': True},
                         'parent_order_id': {'write_only': True},
                         # 'delivery_at': {'write_only': True},
                         # 'delivery_by': {'write_only': True},
