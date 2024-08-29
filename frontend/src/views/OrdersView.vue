@@ -16,6 +16,18 @@
               :date-format-options="{ year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' }">
           </b-form-input>
         </div>
+      <!-- </div> -->
+      <!-- <div class="row"> -->
+        <div class="ml-3 align-content-center col">
+          <label for="customer" class="justify-content-start">Customer</label>
+          <b-form-input id="customer" v-model="customer"></b-form-input>
+        </div>
+        <div class="ml-3  col">
+          <label for="product" class="justify-content-start">Product</label>
+          <b-form-input id="product" v-model="product"></b-form-input>
+        </div>
+      </div>
+      <div class="row">
         <div class="col">
           <label>State</label>
           <div class="d-flex">
@@ -31,16 +43,16 @@
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="ml-3 align-content-center col">
-          <label for="customer" class="justify-content-start">Customer</label>
-          <b-form-input id="customer" v-model="customer"></b-form-input>
-        </div>
-        <div class="ml-3  col">
-          <label for="product" class="justify-content-start">Product</label>
-          <b-form-input id="product" v-model="product"></b-form-input>
-        </div>
+    <div class="row">
+      <div class="col">
+          <label>Run</label>
+          <div class="d-flex">
+            <b-form-checkbox-group v-model="runs" class="run-group">
+              <b-form-checkbox :value="r" checked v-for="r in order_run" switch>{{ (r+"").substr(0,5) }}</b-form-checkbox>
+            </b-form-checkbox-group>
+          </div>
       </div>
+    </div>
     </b-form>
 
     <template #footer>
@@ -144,7 +156,7 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, watch} from "vue";
+import {ref, shallowRef, watch} from "vue";
 import {CanceledError} from "axios";
 import {getOrdersWithFilters, initOrders, syncOrderDetails, syncOrderDeliveryProofs} from '@/api'
 
@@ -155,13 +167,16 @@ const router = useRouter()
 
 const localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-const deliveryDate = ref(formatInTimeZone(new Date(), localTZ, "yyyy-MM-dd"))
-const customer = ref('')
-const product = ref('')
-const status = ref(['submitted', 'accepted', 'invoiced', 'paid'])
-const credit = ref('no')
+const deliveryDate = shallowRef(formatInTimeZone(new Date(), localTZ, "yyyy-MM-dd"))
+const customer = shallowRef('')
+const product = shallowRef('')
+const status = shallowRef(['submitted', 'accepted', 'invoiced', 'paid'])
+const credit = shallowRef('no')
+const order_run = ['ED', 'EE', 'RM1', 'CT', 'S', 'N', 'LE', 'RM2', 'W', 'PU', 'CA', 'EA', '~NR']
+const runs=shallowRef(order_run)
 
-const orders = ref([])
+const orders = shallowRef([])
+let orders_backup = []
 
 const fields = [
   {key: 'order_number', label: 'Order#', sortable: true},
@@ -174,10 +189,10 @@ const fields = [
   // {key: 'show_details', label: 'Action'},
 ]
 
-const init_loading = ref(false)
-const detail_syncing = ref(false)
-const syncing_del_proof = ref(false)
-const data_loading = ref(false)
+const init_loading = shallowRef(false)
+const detail_syncing = shallowRef(false)
+const syncing_del_proof = shallowRef(false)
+const data_loading = shallowRef(false)
 
 let abortController: AbortController | null = null;
 
@@ -185,6 +200,7 @@ const loading_data = async () => {
 
   data_loading.value = true
   orders.value = []
+  orders_backup = orders.value
   if (abortController != null) {
     abortController.abort()
   }
@@ -209,6 +225,8 @@ const loading_data = async () => {
       x.delivery_at_hm = x.delivery_at?formatInTimeZone(new Date(x.delivery_at), localTZ, "HH:mm"):''
       return x
     })
+
+    orders_backup = orders.value
 
   } catch (e) {
     if (!(e instanceof CanceledError)) {
@@ -255,8 +273,17 @@ onBeforeRouteLeave((to, before) => {
   }
 })
 
-watch([deliveryDate, customer, product, status, credit], async ([]) => {
-  await loading_data()
+watch([deliveryDate, customer, product, status, credit, runs], async ([deliveryDate_new, customer_new, product_new, status_new, credit_new, runs_new],
+  [deliveryDate2, customer2, product2, status2, credit2, runs_old]) => {
+   if(runs_old&&runs_new!=runs_old){
+      const _s = new Date().getTime()
+      let x = orders_backup.filter((o)=>runs.value.includes(o.delivery_run))
+      console.log(new Date().getTime() - _s)
+      console.log(x.length)
+      orders.value = x
+    }else{
+      await loading_data()
+    }
 }, {immediate: true})
 
 </script>
