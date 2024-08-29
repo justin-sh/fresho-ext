@@ -27,7 +27,7 @@
               <b-form-checkbox value="paid" switch>Paid</b-form-checkbox>
               <b-form-checkbox value="cancelled" switch>Cancelled</b-form-checkbox>
             </b-form-checkbox-group>
-            <b-form-checkbox v-model="credit" value="yes" uncheckedValue="no">Credit</b-form-checkbox>
+            <b-form-checkbox v-model="credit" value="yes" uncheckedValue="no" switch>Credit</b-form-checkbox>
           </div>
         </div>
       </div>
