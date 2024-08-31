@@ -1,23 +1,13 @@
 <template>
-  <b-card
-      title="Filters"
-      tag="orders"
-      class="mb-2"
-  >
+  <b-card title="Filters" class="mb-2 filters">
     <b-form inline>
       <div class="row">
         <div class="col-3">
           <label for="datepicker">Delivery date</label>
-          <b-form-input
-              type="date"
-              id="datepicker"
-              class="col-3"
-              v-model="deliveryDate"
-              :date-format-options="{ year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' }">
+          <b-form-input type="date" id="datepicker" class="col-3" v-model="deliveryDate"
+            :date-format-options="{ year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' }">
           </b-form-input>
         </div>
-      <!-- </div> -->
-      <!-- <div class="row"> -->
         <div class="ml-3 align-content-center col">
           <label for="customer" class="justify-content-start">Customer</label>
           <b-form-input id="customer" v-model="customer"></b-form-input>
@@ -43,45 +33,34 @@
           </div>
         </div>
       </div>
-    <div class="row">
-      <div class="col">
+      <div class="row">
+        <div class="col">
           <label>Run</label>
           <div class="d-flex">
             <b-form-checkbox-group v-model="runs" class="run-group">
-              <b-form-checkbox :value="r" checked v-for="r in order_run" switch>{{ (r+"").substr(0,5) }}</b-form-checkbox>
+              <b-form-checkbox :value="r" :key="r" checked v-for="r in order_run" switch>{{ (r + "").substring(0, 5)
+                }}</b-form-checkbox>
             </b-form-checkbox-group>
           </div>
+        </div>
       </div>
-    </div>
     </b-form>
 
     <template #footer>
       <div class="row clear">
         <div class="col">
-          <b-button variant="outline-primary"
-                    size="sm"
-                    :loading="init_loading"
-                    @click.stop="initOrder2Server">
+          <b-button variant="outline-primary" size="sm" :loading="init_loading" @click.stop="initOrder2Server">
             S1: re-INIT Order
           </b-button>
-          <b-button variant="outline-primary"
-                    class="ms-2"
-                    size="sm"
-                    :loading="detail_syncing"
-                    @click.stop="syncDetails">
+          <b-button variant="outline-primary" class="ms-2" size="sm" :loading="detail_syncing"
+            @click.stop="syncDetails">
             S2: Sync Detail
           </b-button>
-          <b-button variant="outline-primary"
-                    class="ms-2"
-                    size="sm"
-                    @click.stop="goDeptRepot">
+          <b-button variant="outline-primary" class="ms-2" size="sm" @click.stop="goDeptRepot">
             Dept Report
           </b-button>
-          <b-button variant="outline-primary"
-                    class="ms-2"
-                    size="sm"
-                    :loading="syncing_del_proof"
-                    @click.stop="syncDeliveryProofs">
+          <b-button variant="outline-primary" class="ms-2" size="sm" :loading="syncing_del_proof"
+            @click.stop="syncDeliveryProofs">
             Sync Delivery Proof
           </b-button>
         </div>
@@ -89,79 +68,55 @@
     </template>
   </b-card>
 
-  <b-card>
+  <b-card class="orders">
     <template #header>
-      <div class="col-4 align-content-center">
+      <div class="col align-content-center" ref="tableHeaderRefEl">
         <span class="fw-bold fs-4">Orders </span>
-        <span class="inline fw-light fs-6" v-if="!data_loading">(Total {{ orders.length }})</span>
+        <span class="inline fw-light fs-6" v-if="!data_loading">(Total {{ orders_backup.length }})</span>
       </div>
-    </template>
-    <b-table-simple striped hover>
-      <b-thead>
-        <b-tr>
-          <b-td v-for="h in fields">
-            {{ h['label'] }}
-          </b-td>
-          <b-td>Action</b-td>
-        </b-tr>
-      </b-thead>
-      <b-tbody>
-        <template v-for="order in orders">
-          <b-tr>
-            <b-td v-for="h in fields">
-              <template v-if="h.key === 'order_number'">
-                <a :href="'https://app.fresho.com/supplier/orders/'+order.id" target="_blank">
-                  {{ order[h['key']] }}
-                </a>
-              </template>
-              <template v-else>
-                {{ order[h['key']] }}
-              </template>
-            </b-td>
-            <b-td>
-              <b-button size="sm" @click="order.detailsShowing=!order.detailsShowing" class="mr-2"
-                        variant="light">
-                {{ order.detailsShowing ? 'Hide' : 'Show' }} Details
-              </b-button>
-            </b-td>
-          </b-tr>
-          <b-tr v-if="order.detailsShowing">
-            <b-td :colspan="fields.length+1">
-              <b-card>
-                <div class="row" v-for="p in order.products">
-                  <div class="col-2">{{ p.group }}</div>
-                  <div class="col">{{ p.name }}</div>
-                  <div class="col-2">{{ p.qty }} {{ p.qtyType }}</div>
-                  <div class="col-1">{{ p.status }}</div>
-                </div>
-                <div v-if="!order.products">No Products</div>
-              </b-card>
-            </b-td>
-          </b-tr>
-        </template>
 
-        <b-tr v-if="data_loading">
-          <b-td :colspan="fields.length+1" class="text-center">
-            <b-spinner label="Loading..."></b-spinner>
-          </b-td>
-        </b-tr>
-        <b-tr v-if="!data_loading && orders.length===0">
-          <b-td :colspan="fields.length+1" class="text-center">
-            No Orders.
-          </b-td>
-        </b-tr>
-      </b-tbody>
-    </b-table-simple>
+      <BFormRadioGroup v-model="page_size" :options="page_size_options" class="ms-3 align-content-center"
+        value-field="item" text-field="name" />
+    </template>
+    <template #footer>
+      <b-pagination v-model="currentPage" :total-rows="orders.length" :per-page="page_size" limit="7"
+        @update:model-value="goTableHead" aria-controls="ordertable"></b-pagination>
+    </template>
+
+    <b-table id="ordertable" striped hover :current-page="currentPage" :per-page="page_size" :items="orders"
+      :fields="fields">
+      <template #cell(order_number)="row">
+        <a :href="'https://app.fresho.com/supplier/orders/' + row.item.id" target="_blank">
+          {{ row.value }}
+        </a>
+      </template>
+      <template #cell(show_details)="row">
+        <b-button size="sm" @click="row.toggleDetails" class="mr-2" variant="light">
+          {{ row.detailsShowing ? 'Hide' : 'Show' }} Details
+        </b-button>
+      </template>
+      <template #row-details="row">
+        <b-card>
+          <div class="row" v-for="p in row.item.products" :key="p.name">
+            <div class="col-2">{{ p.group }}</div>
+            <div class="col">{{ p.name }}</div>
+            <div class="col-2">{{ p.qty }} {{ p.qtyType }}</div>
+            <div class="col-1">{{ p.status }}</div>
+          </div>
+          <div v-if="!row.item.products">No Products</div>
+        </b-card>
+      </template>
+    </b-table>
   </b-card>
 </template>
 
 <script lang="ts" setup>
-import {ref, shallowRef, watch} from "vue";
-import {CanceledError} from "axios";
-import {getOrdersWithFilters, initOrders, syncOrderDetails, syncOrderDeliveryProofs} from '@/api'
+import { ref, shallowRef, watch } from "vue";
+import { CanceledError } from "axios";
+import { getOrdersWithFilters, initOrders, syncOrderDetails, syncOrderDeliveryProofs } from '@/api'
 
-import {formatInTimeZone, toDate} from "date-fns-tz";
-import {onBeforeRouteLeave, useRouter} from "vue-router";
+import { formatInTimeZone, toDate } from "date-fns-tz";
+import { onBeforeRouteLeave, useRouter } from "vue-router";
 
 const router = useRouter()
 
@@ -173,26 +128,35 @@ const product = shallowRef('')
 const status = shallowRef(['submitted', 'accepted', 'invoiced', 'paid'])
 const credit = shallowRef('no')
 const order_run = ['ED', 'EE', 'RM1', 'CT', 'S', 'N', 'LE', 'RM2', 'W', 'PU', 'CA', 'EA', '~NR']
-const runs=shallowRef(order_run)
+const runs = shallowRef([])
 
 const orders = shallowRef([])
 let orders_backup = []
 
 const fields = [
-  {key: 'order_number', label: 'Order#', sortable: true},
-  {key: 'delivery_date_md', label: 'Date', sortable: true},
-  {key: 'receiving_company_name', label: 'Customer', sortable: true},
-  {key: 'state', label: 'State', sortable: true},
-  {key: 'delivery_by', label: 'By', sortable: true},
-  {key: 'delivery_at_hm', label: 'At', sortable: true},
-  {key: 'delivery_proof', label: 'Proof', sortable: true},
-  // {key: 'show_details', label: 'Action'},
+  { key: 'order_number', label: 'Order#', sortable: true },
+  { key: 'delivery_date_md', label: 'Date', sortable: true },
+  { key: 'receiving_company_name', label: 'Customer', sortable: true },
+  { key: 'state', label: 'State', sortable: true },
+  { key: 'delivery_by', label: 'By', sortable: true },
+  { key: 'delivery_at_hm', label: 'At', sortable: true },
+  { key: 'delivery_proof', label: 'Proof', sortable: true },
+  { key: 'show_details', label: 'Action' },
 ]
 
 const init_loading = shallowRef(false)
 const detail_syncing = shallowRef(false)
 const syncing_del_proof = shallowRef(false)
 const data_loading = shallowRef(false)
+
+const currentPage = shallowRef(1)
+const page_size = shallowRef(30)
+const page_size_options = [
+  { item: 30, name: '30' },
+  { item: 50, name: '50' },
+  { item: 999, name: 'all' }
+]
+
 
 let abortController: AbortController | null = null;
 
@@ -209,20 +173,20 @@ const loading_data = async () => {
     abortController = new AbortController()
 
     const data = (await getOrdersWithFilters({
-          delivery_date: deliveryDate.value,
-          customer: customer.value,
-          product: product.value,
-          status: status.value,
-          credit: credit.value,
-        },
-        {signal: abortController.signal}
+      delivery_date: deliveryDate.value,
+      customer: customer.value,
+      product: product.value,
+      status: status.value,
+      credit: credit.value,
+    },
+      { signal: abortController.signal }
     )).data
 
 
     orders.value = data.map(function (x) {
       x.detailsShowing = false
       x.delivery_date_md = formatInTimeZone(new Date(x.delivery_date), localTZ, "MM-dd")
-      x.delivery_at_hm = x.delivery_at?formatInTimeZone(new Date(x.delivery_at), localTZ, "HH:mm"):''
+      x.delivery_at_hm = x.delivery_at ? formatInTimeZone(new Date(x.delivery_at), localTZ, "HH:mm") : ''
       return x
     })
 
@@ -257,7 +221,7 @@ const syncDeliveryProofs = async () => {
 }
 
 const goDeptRepot = () => {
-  router.push({name: 'dept-report'})
+  router.push({ name: 'dept-report' })
 }
 
 onBeforeRouteLeave((to, before) => {
@@ -275,16 +239,26 @@ onBeforeRouteLeave((to, before) => {
 
 watch([deliveryDate, customer, product, status, credit, runs], async ([deliveryDate_new, customer_new, product_new, status_new, credit_new, runs_new],
   [deliveryDate2, customer2, product2, status2, credit2, runs_old]) => {
-   if(runs_old&&runs_new!=runs_old){
-      const _s = new Date().getTime()
-      let x = orders_backup.filter((o)=>runs.value.includes(o.delivery_run))
-      console.log(new Date().getTime() - _s)
-      console.log(x.length)
-      orders.value = x
-    }else{
-      await loading_data()
-    }
-}, {immediate: true})
+  runs_old = runs_old || []
+  if (runs_new.toString() !== runs_old.toString()) {
+    const _s = new Date().getTime()
+    let x = runs_new.length === 0 ? orders_backup : orders_backup.filter((o) => runs.value.includes(o.delivery_run))
+    console.log("filter data in js:" + (new Date().getTime() - _s))
+    orders.value = x
+    setTimeout(() => {
+      console.log("update page:" + (new Date().getTime() - _s))
+    }, 0);
+  } else {
+    console.log('loading data')
+    await loading_data()
+  }
+}, { immediate: true })
+
+const tableHeaderRefEl = ref<HTMLElement | null>(null)
+const goTableHead = (page: number) => {
+  console.log(page)
+  tableHeaderRefEl.value?.scrollIntoView({ behavior: 'smooth' })
+}
 
 </script>
 <style scoped>
@@ -294,5 +268,22 @@ tbody tr {
 
 .text-right {
   text-align: right;
+}
+
+:deep(.card-header) {
+  display: flex;
+}
+
+.card-header ul {
+  margin-bottom: 0;
+}
+
+.orders :deep(.card-footer) {
+  display: flex;
+  justify-content: center;
+}
+
+.card-footer ul {
+  margin-bottom: 0;
 }
 </style>
