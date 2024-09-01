@@ -45,19 +45,27 @@ def get_all_orders_by_date(delivery_date, per_page=200):
     url = 'https://app.fresho.com/api/v1/my/suppliers/supplier_orders'
 
     # logger.info(request.GET['delivery_date'])
-    params = {'page': 1,
-              'per_page': per_page,
-              'q[order_state]': 'all',
-              'q[receiving_company_id]': '',
-              'q[delivery_run_code]': '',
-              'q[delivery_date]': delivery_date,
-              'sort': '-delivery_date,-submitted_at,-order_number',
-              }
-    url = 'https://app.fresho.com/api/v1/my/suppliers/supplier_orders'
-    rv = client.get(url, params=params).json()
-    if 'error' in rv:
-        raise Exception("No login information. Plz check the env config.")
-    return rv
+    ret = {'supplier_orders': []}
+    cur_page = 1
+    while True:
+        params = {'page': cur_page,
+                  'per_page': per_page,
+                  'q[order_state]': 'all',
+                  'q[receiving_company_id]': '',
+                  'q[delivery_run_code]': '',
+                  'q[delivery_date]': delivery_date,
+                  'sort': '-delivery_date,-submitted_at,-order_number',
+                  }
+        url = 'https://app.fresho.com/api/v1/my/suppliers/supplier_orders'
+        rv = client.get(url, params=params).json()
+        if 'error' in rv:
+            raise Exception("No login information. Plz check the env config.")
+        ret['supplier_orders'].extend(rv['supplier_orders'])
+        if cur_page >= rv['meta']['total_pages']:
+            break
+        else:
+            cur_page += 1
+    return ret
 
 
 def get_order_details_by_order_ids(ids):

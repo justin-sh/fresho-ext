@@ -98,7 +98,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             orders = orders.filter(payable_total_in_cents__gte=0)
         if not del_date and not customer and not product and not credit and not order_status:
             return orders.none()
-        return orders.order_by('-delivery_date', 'receiving_company_name', 'delivery_run')[:200]
+        return orders.order_by('-delivery_date', 'receiving_company_name', 'delivery_run')[:300]
 
     @action(detail=False)
     def init(self, request):
